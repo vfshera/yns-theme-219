@@ -17,6 +17,7 @@
       "~/*": ["./app/*"],
       "$/*": ["./*"]
     },
+    "allowImportingTsExtensions": true,
     "esModuleInterop": true,
     "verbatimModuleSyntax": true,
     "noEmit": true,
