@@ -8,7 +8,7 @@ Use `bun` (`bun add`, `bun run`). Common scripts: `bun run dev`, `bun run typech
 
 - This is a React Router v8 **framework-mode** app (`@react-router/dev`, `react-router.config.ts`, `app/routes.ts`, `app/routes/`).
 - Before changing routing, route modules, loaders/actions, navigation, or rendering config, load the `react-router` skill (project copy at `.agents/skills/react-router/`; start with `references/framework-mode.md`) and the `react-router-framework-mode` skill, then follow their relevant `references/*.md`.
-- The installed `react-router@8.5.2` package does not include local docs under `node_modules/react-router/docs/`, so use the version-matched official docs at https://reactrouter.com/docs when the references point there. Respect `[MODES: ...]` markers and check feature version requirements before applying guidance.
+- The installed `react-router@8.5.2` package ships local markdown docs under `node_modules/react-router/docs/`, so read those as the source of truth when the references point there; use the version-matched official docs at https://reactrouter.com/docs only as a fallback if local docs are absent. Respect `[MODES: ...]` markers and check feature version requirements before applying guidance.
 
 ## Routing
 
