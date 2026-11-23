@@ -14,15 +14,19 @@ Use `bun` (`bun add`, `bun run`). Common scripts: `bun run dev`, `bun run typech
 
 - `app/routes.ts` exports `autoRoutes()` from `react-router-auto-routes` — don't hand-write route config.
 - Library conventions: `index.tsx` → `/`, `$param` → dynamic segment, `_layout.tsx` → layout, `_`-prefixed folder → pathless group.
+- Prefer flat route files (`app/routes/about.tsx`). Create a route folder only when the route has scoped files (`app/routes/faq/index.tsx` plus `app/routes/faq/+/faq-data.ts`).
+- Render app-wide chrome (header, footer, cart) in `app/root.tsx`. Don't add a pathless group solely to hold chrome for a single-shell storefront.
 
 ## Code organization
 
 - Global components in `app/components/`:
   - Prefer single-file components (SFC): PascalCase filenames, e.g. `app/components/UserCard.tsx`.
+  - If a single file exports multiple components (typically because they share data or types), name the file kebab-case, e.g. `app/components/order-summary.tsx` exporting `OrderSummary` and `OrderSummaryLine`.
   - Multi-file components use a kebab-case folder with an `index.tsx` entry, e.g. `app/components/data-table/index.tsx` with helper files beside it; import as `~/components/data-table`.
+  - `app/components/` is for components used in more than one place. A component used by only one route belongs in that route's `+/` folder instead.
 - Global utils in `app/lib/`:
-  - Single-file utils are flat: `app/lib/format-date.ts`.
-  - Multi-file utils get a folder: `app/lib/auth/` containing universal files plus `.client.ts` / `.server.ts` parts, e.g. `auth/shared.ts`, `auth/session.client.ts`, `auth/session.server.ts`.
+  - Single-file utils are flat and kebab-case: `app/lib/format-date.ts`.
+  - Multi-file utils get a kebab-case folder, e.g. `app/lib/auth/`. It can contain files usable on both sides (`auth/shared.ts`, `auth/types.ts`), client-only parts (`auth/session.client.ts`), server-only parts (`auth/session.server.ts`), or any mix of them. Use a suffix only when the code must stay on one side.
   - React Router treats `.server.ts` and `.client.ts` files as server-only/client-only modules — never import one across that boundary. Route modules themselves must not use these suffixes.
 - Assets always live under `app/assets/` (import via `~/assets/...`):
   - `app/assets/css/` — all global CSS, e.g. `app/assets/css/app.css`.
