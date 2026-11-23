@@ -5,3 +5,6 @@
 # React Router
 /.react-router/
 /build/
+
+# Local working notes — never commit
+/implementation.md
