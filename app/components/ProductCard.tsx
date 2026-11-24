@@ -1,7 +1,6 @@
 import { Link } from "react-router";
 import { YnsMedia } from "~/components/YnsMedia";
-import { formatMoney } from "~/lib/format-money";
-import { listingPrice } from "~/lib/pricing";
+import { formatListingPrice } from "~/lib/format-money";
 import { cn } from "~/lib/utils";
 import type { TaxBehavior } from "~/lib/pricing";
 
@@ -36,11 +35,7 @@ export function ProductCard({
 }) {
   const Heading = headingLevel;
   const categoryName = product.category?.name ?? null;
-  const { currency, locale, taxBehavior } = config;
-  const listing = listingPrice(product.variants, taxBehavior);
-  const priceDisplay = listing
-    ? `${listing.from ? "From " : ""}${formatMoney({ amount: listing.amount, currency, locale })}`
-    : null;
+  const priceDisplay = formatListingPrice(product.variants, config);
 
   const allImages = [
     ...product.images,

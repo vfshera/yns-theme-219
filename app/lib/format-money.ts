@@ -1,3 +1,6 @@
+import { listingPrice } from "~/lib/pricing";
+import type { PricedVariant, TaxBehavior } from "~/lib/pricing";
+
 type MoneyInt = { amount: string | bigint | number; currency: string };
 
 // https://docs.stripe.com/currencies#zero-decimal
@@ -52,4 +55,20 @@ export function formatMoney({
     currency,
     currencyDisplay: "symbol",
   }).format(Number.parseFloat(major));
+}
+
+/** The listing price a shopper sees: currency-formatted, with a `From ` prefix on a range. */
+export function formatListingPrice(
+  variants: readonly PricedVariant[],
+  config: { currency: string; locale: string; taxBehavior: TaxBehavior },
+): string | null {
+  const listing = listingPrice(variants, config.taxBehavior);
+
+  return listing
+    ? `${listing.from ? "From " : ""}${formatMoney({
+        amount: listing.amount,
+        currency: config.currency,
+        locale: config.locale,
+      })}`
+    : null;
 }
