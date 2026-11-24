@@ -340,3 +340,29 @@ export function getCollectionBySlug(slug: string): Collection | null {
 
   return data.find((collection) => collection.slug === slug) ?? null;
 }
+
+/** A product looked up by its URL slug. Slugs are ids in the fixtures, but read by slug. */
+export function getProductBySlug(slug: string): Product | null {
+  const { data } = queryStore("products", ALL_ITEMS) as ApiList<Product>;
+
+  return data.find((product) => product.slug === slug) ?? null;
+}
+
+/**
+ * Same-category suggestions first, then other products so a thin category still fills the row.
+ * The current product is always excluded.
+ */
+export function getRelatedProducts(
+  productId: string,
+  categorySlug?: string | null,
+  limit = 10,
+): Product[] {
+  const others = getProducts(100).filter((product) => product.id !== productId);
+  const inCategory = categorySlug
+    ? others.filter((product) => product.category?.slug === categorySlug)
+    : [];
+  const categoryIds = new Set(inCategory.map((product) => product.id));
+  const rest = others.filter((product) => !categoryIds.has(product.id));
+
+  return [...inCategory, ...rest].slice(0, limit);
+}
