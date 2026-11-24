@@ -7,7 +7,7 @@ export default defineConfig({
     browser: true,
     serviceworker: true,
   },
-  ignorePatterns: ["node_modules/**", ".react-router"],
+  ignorePatterns: ["node_modules/**", ".react-router", ".agents/skills/**"],
   settings: {
     react: {
       formComponents: ["Form"],

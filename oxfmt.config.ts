@@ -51,5 +51,5 @@ export default defineConfig({
   },
   printWidth: 80,
   sortPackageJson: true,
-  ignorePatterns: [],
+  ignorePatterns: [".agents/skills/**"],
 });
