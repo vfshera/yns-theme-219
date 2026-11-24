@@ -1,10 +1,8 @@
 import { Link } from "react-router";
 import { ArrowRight } from "lucide-react";
 import { ProductCard } from "~/components/ProductCard";
+import { PRODUCT_GRID } from "~/lib/product-grid";
 import type { CardConfig, CardProduct } from "~/components/ProductCard";
-
-const PRODUCT_GRID =
-  "grid grid-cols-2 gap-x-4 gap-y-8 md:grid-cols-3 lg:grid-cols-4 lg:gap-x-5";
 
 export function HomeProducts({
   products,

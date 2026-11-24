@@ -11,6 +11,7 @@ import type {
   Product,
   SocialsResponse,
 } from "./types";
+import type { CatalogSort } from "~/lib/catalog-sort";
 
 export type ShopLink = { href: string; label: string };
 
@@ -201,4 +202,141 @@ export function getShopTiles(): ShopTile[] {
     ...categoryTiles,
     ...collectionTiles,
   ].slice(0, 10);
+}
+
+/**
+ * Listing pages read the small mock catalog in one call and sort/paginate locally. This keeps
+ * sorting correct across pages without adding new endpoints to the static mock API.
+ */
+const ALL_ITEMS = new URLSearchParams({ active: "true", limit: "100" });
+const PAGE_SIZE = 12;
+
+export type { CatalogSort };
+
+export type CatalogPage = {
+  products: Product[];
+  count: number;
+  page: number;
+  totalPages: number;
+};
+
+export function parsePage(raw: string | null): number {
+  const value = Number(raw);
+
+  return Number.isInteger(value) && value > 0 ? value : 1;
+}
+
+const priceOf = (product: Product) => Number(product.variants[0]?.price ?? 0);
+
+const sortProducts = (
+  products: readonly Product[],
+  sort: CatalogSort,
+): Product[] => {
+  const sorted = [...products];
+
+  if (sort === "name") {
+    return sorted.sort((a, b) => a.name.localeCompare(b.name));
+  }
+  if (sort === "price-asc") {
+    return sorted.sort((a, b) => priceOf(a) - priceOf(b));
+  }
+  if (sort === "price-desc") {
+    return sorted.sort((a, b) => priceOf(b) - priceOf(a));
+  }
+
+  return photographedFirst(sorted);
+};
+
+const toCatalogPage = (
+  products: readonly Product[],
+  page: number,
+): CatalogPage => {
+  const totalPages = Math.max(1, Math.ceil(products.length / PAGE_SIZE));
+  const currentPage = Math.min(Math.max(1, page), totalPages);
+
+  return {
+    products: products.slice(
+      (currentPage - 1) * PAGE_SIZE,
+      currentPage * PAGE_SIZE,
+    ),
+    count: products.length,
+    page: currentPage,
+    totalPages,
+  };
+};
+
+type BrowseOptions = {
+  page: number;
+  sort: CatalogSort;
+  category?: string;
+  query?: string;
+};
+
+const browseProductsForListing = ({
+  page,
+  sort,
+  category,
+  query,
+}: BrowseOptions): CatalogPage => {
+  const params = new URLSearchParams(ALL_ITEMS);
+
+  if (category) {
+    params.set("category", category);
+  }
+  if (query) {
+    params.set("query", query);
+  }
+
+  const { data } = queryStore("products", params) as ApiList<Product>;
+
+  return toCatalogPage(sortProducts(data, sort), page);
+};
+
+export function browseCatalogProducts(options: {
+  page?: number;
+  sort?: CatalogSort;
+  category?: string;
+}): CatalogPage {
+  return browseProductsForListing({
+    page: options.page ?? 1,
+    sort: options.sort ?? "featured",
+    category: options.category,
+  });
+}
+
+export function searchProducts(options: {
+  query: string;
+  page?: number;
+  sort?: CatalogSort;
+  category?: string;
+}): CatalogPage {
+  return browseProductsForListing({
+    page: options.page ?? 1,
+    sort: options.sort ?? "featured",
+    category: options.category,
+    query: options.query,
+  });
+}
+
+export function getCategoryBySlug(slug: string): Category | null {
+  const { data } = queryStore("categories", ALL_ITEMS) as ApiList<Category>;
+
+  return data.find((category) => category.slug === slug) ?? null;
+}
+
+export function getCategoryOptions(): { value: string; label: string }[] {
+  const { data } = queryStore("categories", ALL_ITEMS) as ApiList<Category>;
+
+  return data
+    .filter((category) => !category.parentId)
+    .map((category) => ({
+      value: category.slug,
+      label: leafName(category.name),
+    }));
+}
+
+export function getCollectionBySlug(slug: string): Collection | null {
+  const { data } = queryStore("collections", ALL_ITEMS) as ApiList<Collection>;
+
+  return data.find((collection) => collection.slug === slug) ?? null;
 }
