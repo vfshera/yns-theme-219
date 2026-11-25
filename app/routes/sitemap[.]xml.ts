@@ -1,5 +1,9 @@
 import type { Route } from "./+types/sitemap[.]xml";
-import { getProducts, getShopLinks } from "~/lib/mock-store/catalog.server";
+import {
+  getProducts,
+  getShopLinks,
+  getStoreInfo,
+} from "~/lib/mock-store/catalog.server";
 
 const escapeXml = (value: string) =>
   value
@@ -16,6 +20,7 @@ export function loader({ request }: Route.LoaderArgs) {
     "/about",
     "/faq",
     "/products",
+    ...(getStoreInfo().contact ? ["/contact"] : []),
     ...getShopLinks().links.map((link) => link.href),
     ...getProducts(100).map((product) => `/product/${product.slug}`),
   ];
