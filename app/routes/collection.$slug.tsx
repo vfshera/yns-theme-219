@@ -41,14 +41,66 @@ export function loader({ params }: Route.LoaderArgs) {
   };
 }
 
-export const meta: Route.MetaFunction = ({ loaderData }) => [
-  { title: loaderData.name },
-  {
-    tagName: "link",
-    rel: "canonical",
-    href: `/collection/${loaderData.slug}`,
-  },
-];
+export const meta: Route.MetaFunction = ({ loaderData, matches, location }) => {
+  const { storeName, storeDescription } = matches[0].loaderData.info;
+  const origin = matches[0].loaderData.origin;
+  const url = `${origin}${location.pathname}`;
+  const description = loaderData.description ?? storeDescription ?? "";
+  const title = `${loaderData.name} | ${storeName}`;
+  const image = loaderData.image ?? loaderData.products[0]?.images[0];
+  const ogImage = image ? `${origin}${image}` : undefined;
+
+  return [
+    { title },
+    { name: "description", content: description },
+    { tagName: "link", rel: "canonical", href: url },
+    { property: "og:type", content: "website" },
+    { property: "og:site_name", content: storeName },
+    { property: "og:url", content: url },
+    { property: "og:title", content: title },
+    { property: "og:description", content: description },
+    ...(ogImage ? [{ property: "og:image", content: ogImage }] : []),
+    {
+      name: "twitter:card",
+      content: ogImage ? "summary_large_image" : "summary",
+    },
+    { name: "twitter:title", content: title },
+    { name: "twitter:description", content: description },
+    ...(ogImage ? [{ name: "twitter:image", content: ogImage }] : []),
+    {
+      "script:ld+json": {
+        "@context": "https://schema.org",
+        "@type": "CollectionPage",
+        name: loaderData.name,
+        url,
+        description,
+        breadcrumb: {
+          "@type": "BreadcrumbList",
+          itemListElement: [
+            {
+              "@type": "ListItem",
+              position: 1,
+              name: "Home",
+              item: `${origin}/`,
+            },
+            {
+              "@type": "ListItem",
+              position: 2,
+              name: "Products",
+              item: `${origin}/products`,
+            },
+            {
+              "@type": "ListItem",
+              position: 3,
+              name: loaderData.name,
+              item: url,
+            },
+          ],
+        },
+      },
+    },
+  ];
+};
 
 export default function Collection({ loaderData }: Route.ComponentProps) {
   const { name, description, image, products, suggestions, config } =

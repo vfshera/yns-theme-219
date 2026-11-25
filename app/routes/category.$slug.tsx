@@ -44,14 +44,62 @@ export function loader({ params, request }: Route.LoaderArgs) {
   };
 }
 
-export const meta: Route.MetaFunction = ({ loaderData }) => [
-  { title: loaderData.label },
-  {
-    tagName: "link",
-    rel: "canonical",
-    href: `/category/${loaderData.slug}`,
-  },
-];
+export const meta: Route.MetaFunction = ({ loaderData, matches, location }) => {
+  const { storeName, storeDescription } = matches[0].loaderData.info;
+  const origin = matches[0].loaderData.origin;
+  const url = `${origin}${location.pathname}`;
+  const description =
+    storeDescription ??
+    "Considered things for everyday living, in soft colours and simple shapes.";
+  const title = `${loaderData.label} | ${storeName}`;
+  const image = loaderData.products[0]?.images[0];
+  const ogImage = image ? `${origin}${image}` : undefined;
+
+  return [
+    { title },
+    { name: "description", content: description },
+    { tagName: "link", rel: "canonical", href: url },
+    { property: "og:type", content: "website" },
+    { property: "og:site_name", content: storeName },
+    { property: "og:url", content: url },
+    { property: "og:title", content: title },
+    { property: "og:description", content: description },
+    ...(ogImage ? [{ property: "og:image", content: ogImage }] : []),
+    {
+      name: "twitter:card",
+      content: ogImage ? "summary_large_image" : "summary",
+    },
+    { name: "twitter:title", content: title },
+    { name: "twitter:description", content: description },
+    ...(ogImage ? [{ name: "twitter:image", content: ogImage }] : []),
+    {
+      "script:ld+json": {
+        "@context": "https://schema.org",
+        "@type": "CollectionPage",
+        name: loaderData.label,
+        url,
+        description,
+        breadcrumb: {
+          "@type": "BreadcrumbList",
+          itemListElement: [
+            {
+              "@type": "ListItem",
+              position: 1,
+              name: "Home",
+              item: `${origin}/`,
+            },
+            {
+              "@type": "ListItem",
+              position: 2,
+              name: loaderData.label,
+              item: url,
+            },
+          ],
+        },
+      },
+    },
+  ];
+};
 
 export default function Category({ loaderData }: Route.ComponentProps) {
   const {

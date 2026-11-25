@@ -27,20 +27,41 @@ export function loader({ request }: Route.LoaderArgs) {
   };
 }
 
-export const meta: Route.MetaFunction = ({ loaderData }) => [
-  {
-    title:
-      loaderData.page > 1
-        ? `All Products — Page ${loaderData.page}`
-        : "All Products",
-  },
-  {
-    tagName: "link",
-    rel: "canonical",
-    href:
-      loaderData.page > 1 ? `/products?page=${loaderData.page}` : "/products",
-  },
-];
+export const meta: Route.MetaFunction = ({ loaderData, matches, location }) => {
+  const { storeName, storeDescription } = matches[0].loaderData.info;
+  const origin = matches[0].loaderData.origin;
+  const description =
+    storeDescription ??
+    "Considered things for everyday living, in soft colours and simple shapes.";
+  const url = `${origin}${location.pathname}${
+    loaderData.page > 1 ? `?page=${loaderData.page}` : ""
+  }`;
+  const title =
+    loaderData.page > 1
+      ? `All Products — Page ${loaderData.page}`
+      : "All Products";
+  const image = loaderData.products[0]?.images[0];
+  const ogImage = image ? `${origin}${image}` : undefined;
+
+  return [
+    { title: `${title} | ${storeName}` },
+    { name: "description", content: description },
+    { tagName: "link", rel: "canonical", href: url },
+    { property: "og:type", content: "website" },
+    { property: "og:site_name", content: storeName },
+    { property: "og:url", content: url },
+    { property: "og:title", content: `${title} | ${storeName}` },
+    { property: "og:description", content: description },
+    ...(ogImage ? [{ property: "og:image", content: ogImage }] : []),
+    {
+      name: "twitter:card",
+      content: ogImage ? "summary_large_image" : "summary",
+    },
+    { name: "twitter:title", content: `${title} | ${storeName}` },
+    { name: "twitter:description", content: description },
+    ...(ogImage ? [{ name: "twitter:image", content: ogImage }] : []),
+  ];
+};
 
 export default function Products({ loaderData }: Route.ComponentProps) {
   const {

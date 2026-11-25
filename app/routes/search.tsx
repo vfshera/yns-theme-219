@@ -36,11 +36,32 @@ export function loader({ request }: Route.LoaderArgs) {
   };
 }
 
-export const meta: Route.MetaFunction = ({ loaderData }) => [
-  { title: loaderData.query ? `Search: ${loaderData.query}` : "Search" },
-  { tagName: "link", rel: "canonical", href: "/search" },
-  { name: "robots", content: "noindex, follow" },
-];
+export const meta: Route.MetaFunction = ({ loaderData, matches, location }) => {
+  const { storeName, storeDescription } = matches[0].loaderData.info;
+  const origin = matches[0].loaderData.origin;
+  const url = `${origin}${location.pathname}`;
+  const description =
+    storeDescription ??
+    "Considered things for everyday living, in soft colours and simple shapes.";
+  const title = loaderData.query
+    ? `Search: ${loaderData.query} | ${storeName}`
+    : `Search | ${storeName}`;
+
+  return [
+    { title },
+    { name: "description", content: description },
+    { name: "robots", content: "noindex, follow" },
+    { tagName: "link", rel: "canonical", href: url },
+    { property: "og:type", content: "website" },
+    { property: "og:site_name", content: storeName },
+    { property: "og:url", content: url },
+    { property: "og:title", content: title },
+    { property: "og:description", content: description },
+    { name: "twitter:card", content: "summary" },
+    { name: "twitter:title", content: title },
+    { name: "twitter:description", content: description },
+  ];
+};
 
 export default function Search({ loaderData }: Route.ComponentProps) {
   const {
