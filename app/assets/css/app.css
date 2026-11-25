@@ -157,3 +157,17 @@
   --tw-prose-bullets: var(--muted-foreground);
   --tw-prose-counters: var(--muted-foreground);
 }
+
+/* Rendered Tiptap content: headings clear floated images, empty paragraphs act as spacers. */
+.tiptap-content {
+  display: flow-root;
+}
+
+.tiptap-content :where(h1, h2, h3, h4, h5, h6) {
+  clear: both;
+}
+
+.tiptap-content p:empty {
+  min-height: 1em;
+  overflow: hidden;
+}
