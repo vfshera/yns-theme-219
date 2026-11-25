@@ -1,4 +1,4 @@
-# yns-theme-219
+# YNS Theme 219
 
 A port of Your Next Store theme 219 ("Lazora") to React Router v8 framework mode. The storefront is self-contained: a static Store API and cart run inside the app, so no second server or external API URL is needed.
 
@@ -30,20 +30,20 @@ Open http://localhost:5173. The home page, catalog browsing, product detail, sea
 
 ## Routes
 
-| Path                  | Purpose                                                        |
-| --------------------- | -------------------------------------------------------------- |
-| `/`                   | Home: banner carousel, shop tiles, product grid                 |
-| `/products`           | Catalog listing with sort, category filter, and pagination      |
-| `/product/:slug`      | Product detail: gallery, variants, related products, add-to-cart |
-| `/category/:slug`     | Category-filtered listing                                       |
-| `/collection/:slug`   | Collection detail with its products                             |
-| `/search`             | Search results (`?q=`), sorted and paginated                     |
-| `/faq`                | Static FAQ with Base UI accordions                              |
-| `/about`              | Editorial about page                                            |
-| `/cart`               | Cart resource route (loader + action)                           |
-| `/api/v1/*`           | Static Store API resource route                                 |
-| `/sitemap.xml`        | Sitemap of static pages, categories, and products               |
-| `/robots.txt`         | Robots policy pointing at the sitemap                           |
+| Path                | Purpose                                                          |
+| ------------------- | ---------------------------------------------------------------- |
+| `/`                 | Home: banner carousel, shop tiles, product grid                  |
+| `/products`         | Catalog listing with sort, category filter, and pagination       |
+| `/product/:slug`    | Product detail: gallery, variants, related products, add-to-cart |
+| `/category/:slug`   | Category-filtered listing                                        |
+| `/collection/:slug` | Collection detail with its products                              |
+| `/search`           | Search results (`?q=`), sorted and paginated                     |
+| `/faq`              | Static FAQ with Base UI accordions                               |
+| `/about`            | Editorial about page                                             |
+| `/cart`             | Cart resource route (loader + action)                            |
+| `/api/v1/*`         | Static Store API resource route                                  |
+| `/sitemap.xml`      | Sitemap of static pages, categories, and products                |
+| `/robots.txt`       | Robots policy pointing at the sitemap                            |
 
 The listing routes (`/products`, `/category/:slug`, `/search`) share `ListingControls`, `ListingPagination`, `ProductCard`, and `NoProducts`. Sort (`sort`), page (`page`), and category (`category`) are query parameters.
 
@@ -72,8 +72,6 @@ Route modules export `meta` functions for titles, canonical URLs, Open Graph/Twi
 - `app/lib/mock-store/` — server-only data layer (`fixtures.server.ts`, `handlers.server.ts`, `catalog.server.ts`, `cart.server.ts`, `config.server.ts`, `editorial.server.ts`, `types.ts`). Route loaders call it and return plain data; components never import it.
 - `app/assets/css/app.css` — Tailwind v4 tokens, fonts, and utilities.
 - `public/` — static assets served at their reference URLs: `/images/pexels/*.jpg`, `/logo.svg`, `/favicon.ico`.
-
-No `"use client"` directive is used: React Router framework mode creates client/server boundaries through `.client.ts` / `.server.ts` file suffixes.
 
 ## Not implemented yet
 
