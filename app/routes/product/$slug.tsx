@@ -1,7 +1,6 @@
 import type { Route } from "./+types/$slug";
 import { isRouteErrorResponse, Link } from "react-router";
 import { ChevronDown } from "lucide-react";
-import { AddToCartButton } from "~/components/cart";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -10,13 +9,17 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "~/components/ui/breadcrumb";
+import { sortVariantsByOptions } from "~/lib/variants/order";
+import { resolveSelectedVariant } from "~/lib/variants/selected";
 import {
   getProductBySlug,
   getRelatedProducts,
 } from "~/lib/mock-store/catalog.server";
 import { getStoreConfig } from "~/lib/mock-store/config.server";
 import { ProductGallery } from "./+/ProductGallery";
+import { PurchasePanel } from "./+/PurchasePanel";
 import { RelatedProducts } from "./+/RelatedProducts";
+import { useSelectedVariant } from "./+/use-selected-variant";
 
 export function loader({ params }: Route.LoaderArgs) {
   const product = getProductBySlug(params.slug);
@@ -27,6 +30,7 @@ export function loader({ params }: Route.LoaderArgs) {
 
   return {
     product,
+    variants: sortVariantsByOptions(product.variants),
     config: getStoreConfig(),
     related: getRelatedProducts(product.id, product.category?.slug),
   };
@@ -46,7 +50,10 @@ export const meta: Route.MetaFunction = ({ loaderData, matches, location }) => {
     "Considered things for everyday living, in soft colours and simple shapes.";
   const image = product?.images[0];
   const ogImage = image ? `${origin}${image}` : undefined;
-  const variant = product?.variants[0];
+  const variant = resolveSelectedVariant(
+    loaderData?.variants ?? [],
+    new URLSearchParams(location.search),
+  );
 
   return [
     { title },
@@ -150,7 +157,11 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
 }
 
 export default function Product({ loaderData }: Route.ComponentProps) {
-  const { product, config, related } = loaderData;
+  const { product, variants, config, related } = loaderData;
+  const { selectedVariant, selectedOptions } = useSelectedVariant(variants);
+  const galleryImages = selectedVariant?.images.length
+    ? selectedVariant.images
+    : product.images;
   const category = product.category;
   const categoryName = category
     ? category.name.split(">").at(-1)?.trim() || category.name
@@ -177,7 +188,7 @@ export default function Product({ loaderData }: Route.ComponentProps) {
       </Breadcrumb>
 
       <div className="mb-20 flex flex-col gap-8 lg:mb-24 lg:flex-row lg:items-start lg:gap-12">
-        <ProductGallery images={product.images} productName={product.name} />
+        <ProductGallery images={galleryImages} productName={product.name} />
 
         <div className="flex w-full flex-col lg:w-[420px] lg:shrink-0 xl:w-[500px]">
           {category && categoryName && (
@@ -193,16 +204,18 @@ export default function Product({ loaderData }: Route.ComponentProps) {
           <h1 className="mb-3.5 text-2xl font-bold text-balance">
             {product.name}
           </h1>
-          <AddToCartButton
+          <PurchasePanel
             product={{
               id: product.id,
               name: product.name,
               slug: product.slug,
               images: product.images,
             }}
-            variants={product.variants}
+            variants={variants}
+            selectedVariant={selectedVariant}
+            selectedOptions={selectedOptions}
           />
-          {/* Deferred: variant selector, quantity and subscriptions — fixtures have one variant. */}
+          {/* Deferred: subscriptions and bundles. */}
 
           {(product.summary || product.content) && (
             <details open className="group mt-6 border-b border-border">

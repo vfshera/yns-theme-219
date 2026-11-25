@@ -1,9 +1,9 @@
 import { YnsMedia } from "~/components/YnsMedia";
 
 /**
- * The fixtures carry exactly one product image, so this is a single framed photo.
- * Deferred: thumbnail strip, zoom button, mobile arrows, keyboard nav and the
- * variant-linked image jump from the source theme.
+ * A single framed photo: the page passes the selected variant's first image when it has
+ * one, otherwise the product images. Deferred: thumbnail strip, zoom button, mobile
+ * arrows and keyboard nav from the source theme.
  */
 export function ProductGallery({
   images,

@@ -1,4 +1,4 @@
-import { itemKey } from "~/lib/cart/cart-math";
+import { itemKey, lineKey } from "~/lib/cart/cart-math";
 import { getStoreConfig } from "./config.server";
 import { queryStore } from "./handlers.server";
 import type { ApiList, Product } from "./types";
@@ -20,7 +20,7 @@ let idCounter = 0;
 const allProducts = (): Product[] =>
   (queryStore("products", ALL_PRODUCTS) as ApiList<Product>).data;
 
-/** Build a source-shaped line from a fixture variant; `v-<productId>` is the fixture id. */
+/** Build a source-shaped line from any fixture variant, including multi-variant ones. */
 function makeLine(variantId: string, quantity: number): CartLineItem | null {
   const product = allProducts().find((entry) =>
     entry.variants.some((variant) => variant.id === variantId),
@@ -161,7 +161,7 @@ export function removeLine(id: string, variantId: string): Cart | null {
     return null;
   }
 
-  const key = `v-${variantId.replace(/^v-/, "")}:`;
+  const key = lineKey(variantId);
   const lineItems = cart.lineItems.filter((item) => itemKey(item) !== key);
 
   if (lineItems.length === cart.lineItems.length) {

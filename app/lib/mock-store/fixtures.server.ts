@@ -5,10 +5,12 @@ import type {
   MeResponse,
   Post,
   Product,
+  ProductVariant,
   SocialsResponse,
   Store,
 } from "./types";
 import type { JSONContent } from "@tiptap/core";
+import type { VariantCombination } from "~/lib/variants/types";
 
 const PHOTOS = [
   "/images/pexels/pastel-stationery.jpg",
@@ -46,6 +48,35 @@ const CATEGORIES = [
   },
 ] satisfies Category[];
 
+const color = (
+  id: string,
+  value: string,
+  colorValue: string,
+  position: number,
+): VariantCombination => ({
+  variantValue: {
+    id,
+    value,
+    colorValue,
+    position,
+    variantType: { id: "vt-color", type: "color", label: "Color" },
+  },
+});
+
+const size = (
+  id: string,
+  value: string,
+  position: number,
+): VariantCombination => ({
+  variantValue: {
+    id,
+    value,
+    colorValue: null,
+    position,
+    variantType: { id: "vt-size", type: "string", label: "Size" },
+  },
+});
+
 /** Prices are minor-unit strings, exactly as the real Store API returns them. */
 const makeProduct = (
   id: string,
@@ -53,6 +84,7 @@ const makeProduct = (
   price: string,
   image: string,
   categoryId: string,
+  variants?: ProductVariant[],
 ): Product => ({
   id,
   name,
@@ -64,7 +96,7 @@ const makeProduct = (
   content: null,
   category: CATEGORIES.find((category) => category.id === categoryId) ?? null,
   subscriptionMode: "optional",
-  variants: [
+  variants: variants ?? [
     {
       id: `v-${id}`,
       price,
@@ -76,12 +108,80 @@ const makeProduct = (
   ],
 });
 
+/** Two products carry real options; combinations are always listed Color then Size. */
+const STATIONERY_VARIANTS = [
+  {
+    id: "v-pastel-stationery-set",
+    price: "2400",
+    priceGross: "2400",
+    stock: 10,
+    images: [PHOTOS[0]],
+    combinations: [
+      color("vv-blush", "Blush", "#E8B4B8", 0),
+      size("vv-a5", "A5", 0),
+    ],
+  },
+  {
+    id: "v-pastel-stationery-set-blush-a4",
+    price: "3200",
+    priceGross: "3200",
+    stock: 10,
+    images: [PHOTOS[0]],
+    combinations: [
+      color("vv-blush", "Blush", "#E8B4B8", 0),
+      size("vv-a4", "A4", 1),
+    ],
+  },
+  {
+    id: "v-pastel-stationery-set-sage-a5",
+    price: "2400",
+    priceGross: "2400",
+    stock: 10,
+    images: [PHOTOS[4]],
+    combinations: [
+      color("vv-sage", "Sage", "#B7C9B1", 1),
+      size("vv-a5", "A5", 0),
+    ],
+  },
+  {
+    id: "v-pastel-stationery-set-sage-a4",
+    price: "3200",
+    priceGross: "3200",
+    stock: 10,
+    images: [PHOTOS[4]],
+    combinations: [
+      color("vv-sage", "Sage", "#B7C9B1", 1),
+      size("vv-a4", "A4", 1),
+    ],
+  },
+] satisfies ProductVariant[];
+
+const TOTE_VARIANTS = [
+  {
+    id: "v-canvas-tote-bag",
+    price: "3200",
+    priceGross: "3200",
+    stock: 10,
+    images: [PHOTOS[1]],
+    combinations: [color("vv-natural", "Natural", "#E8DCC8", 0)],
+  },
+  {
+    id: "v-canvas-tote-bag-rose",
+    price: "3200",
+    priceGross: "3200",
+    stock: 10,
+    images: [PHOTOS[4]],
+    combinations: [color("vv-rose", "Rose", "#E8B4B8", 1)],
+  },
+] satisfies ProductVariant[];
+
 const stationerySet = makeProduct(
   "pastel-stationery-set",
   "Pastel Stationery Set",
   "2400",
   PHOTOS[0],
   "cat-stationery",
+  STATIONERY_VARIANTS,
 );
 const toteBag = makeProduct(
   "canvas-tote-bag",
@@ -89,6 +189,7 @@ const toteBag = makeProduct(
   "3200",
   PHOTOS[1],
   "cat-accessories",
+  TOTE_VARIANTS,
 );
 const linenShirt = makeProduct(
   "linen-shirt",

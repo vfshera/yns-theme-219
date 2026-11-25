@@ -1,5 +1,7 @@
 /** Types for the cookie-identified mock cart. Mirrors the Store API cart shape. */
 
+import type { VariantCombination } from "~/lib/variants/types";
+
 export type Coupon = {
   code: string;
   type: "percentage" | "fixed";
@@ -11,12 +13,7 @@ export type CartVariant = {
   price: string;
   priceGross: string;
   images: string[];
-  combinations: {
-    variantValue: {
-      variantType: { label: string };
-      value: string;
-    };
-  }[];
+  combinations: VariantCombination[];
   product: {
     id: string;
     name: string;

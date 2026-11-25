@@ -1,4 +1,5 @@
 import type { JSONContent } from "@tiptap/core";
+import type { VariantCombination } from "~/lib/variants/types";
 
 /** Minimal contracts for the Store API shapes this app actually uses. */
 export type ApiMeta = {
@@ -18,12 +19,7 @@ export type ProductVariant = {
   priceGross: string;
   stock: number;
   images: string[];
-  combinations: {
-    variantValue: {
-      variantType: { label: string };
-      value: string;
-    };
-  }[];
+  combinations: VariantCombination[];
 };
 
 export type Category = {

@@ -12,10 +12,13 @@ export const lineKey = (
 
 export const itemKey = (item: CartLineItem) => lineKey(item.productVariant.id);
 
-/** The option values that tell two lines of one product apart (empty for flat fixtures). */
+/** The options that tell two lines of one product apart (empty for flat fixtures). */
 export const lineOptions = (item: CartLineItem) =>
   item.productVariant.combinations
-    .map(({ variantValue }) => variantValue.value)
+    .map(
+      ({ variantValue }) =>
+        `${variantValue.variantType.label}: ${variantValue.value}`,
+    )
     .join(" / ");
 
 /** Unit price in the shopper's basis, choosing the gross twin when tax is inclusive. */
