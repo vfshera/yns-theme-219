@@ -170,7 +170,9 @@ const STORE = {
     storeDescription:
       "Considered things for everyday living, in soft colours and simple shapes.",
     freeShippingThreshold: "5000",
-    enabledTools: { blog: false, contactForm: false },
+    // Store feature flags: turning `contactForm` off gates /contact to a 404
+    // (and hides its footer/About links) exactly as it does in the source theme.
+    enabledTools: { blog: false, contactForm: true },
     defaultLanguage: null,
     enabledLanguages: {},
   },

@@ -60,7 +60,7 @@ export function Footer({
     { href: "/about", label: "About" },
     ...(info.blog ? [{ href: "/blog", label: "Blog" }] : []),
   ];
-  // Legal pages and the contact form are deferred with their mock endpoints.
+  // Legal pages are deferred with their mock endpoints.
   const help = [
     ...(info.contact ? [{ href: "/contact", label: "Contact" }] : []),
     { href: "/faq", label: "FAQs" },
