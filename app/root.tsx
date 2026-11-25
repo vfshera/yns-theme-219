@@ -27,17 +27,47 @@ export const links: Route.LinksFunction = () => [
   },
 ];
 
-export function loader() {
+export function loader({ request }: Route.LoaderArgs) {
   return {
     info: getStoreInfo(),
     shop: getShopLinks(),
     config: getStoreConfig(),
+    origin: new URL(request.url).origin,
   };
 }
 
-export const meta: Route.MetaFunction = ({ loaderData }) => [
-  { title: loaderData?.info.storeName ?? "Your Next Store" },
-];
+export const meta: Route.MetaFunction = ({ loaderData }) => {
+  const name = loaderData?.info.storeName ?? "Your Next Store";
+  const description =
+    loaderData?.info.storeDescription ??
+    "Considered things for everyday living, in soft colours and simple shapes.";
+  const origin = loaderData?.origin ?? "";
+  const url = `${origin}/`;
+
+  return [
+    { title: name },
+    { name: "description", content: description },
+    { tagName: "link", rel: "canonical", href: url },
+    { property: "og:type", content: "website" },
+    { property: "og:site_name", content: name },
+    { property: "og:url", content: url },
+    { property: "og:title", content: name },
+    { property: "og:description", content: description },
+    { name: "twitter:card", content: "summary" },
+    { name: "twitter:title", content: name },
+    { name: "twitter:description", content: description },
+    {
+      "script:ld+json": {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        name,
+        url,
+        description,
+        publisher: { "@type": "Organization", name },
+      },
+    },
+  ];
+};
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
