@@ -1,6 +1,7 @@
 import type { Route } from "./+types/$slug";
 import { isRouteErrorResponse, Link } from "react-router";
 import { ChevronDown } from "lucide-react";
+import { AddToCartButton } from "~/components/cart";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -9,7 +10,6 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "~/components/ui/breadcrumb";
-import { formatListingPrice } from "~/lib/format-money";
 import {
   getProductBySlug,
   getRelatedProducts,
@@ -79,7 +79,6 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
 
 export default function Product({ loaderData }: Route.ComponentProps) {
   const { product, config, related } = loaderData;
-  const price = formatListingPrice(product.variants, config);
   const category = product.category;
   const categoryName = category
     ? category.name.split(">").at(-1)?.trim() || category.name
@@ -122,9 +121,16 @@ export default function Product({ loaderData }: Route.ComponentProps) {
           <h1 className="mb-3.5 text-2xl font-bold text-balance">
             {product.name}
           </h1>
-          {price && <p className="text-lg font-medium">{price}</p>}
-
-          {/* Deferred (Phase 7): AddToCartButton / VariantSelector need cart state. */}
+          <AddToCartButton
+            product={{
+              id: product.id,
+              name: product.name,
+              slug: product.slug,
+              images: product.images,
+            }}
+            variants={product.variants}
+          />
+          {/* Deferred: variant selector, quantity and subscriptions — fixtures have one variant. */}
 
           {(product.summary || product.content) && (
             <details open className="group mt-6 border-b border-border">
