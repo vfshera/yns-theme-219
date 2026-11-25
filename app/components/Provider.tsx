@@ -1,11 +1,17 @@
 import type { ReactNode } from "react";
+import { CartProvider, CartSidebar } from "~/components/cart";
 import { Toaster } from "~/components/ui/sonner";
 import { TooltipProvider } from "~/components/ui/tooltip";
 
 export default function Provider({ children }: { children: ReactNode }) {
   return (
     <>
-      <TooltipProvider>{children}</TooltipProvider>
+      <TooltipProvider>
+        <CartProvider>
+          {children}
+          <CartSidebar />
+        </CartProvider>
+      </TooltipProvider>
       <Toaster richColors position="top-center" />
     </>
   );

@@ -1,5 +1,5 @@
 import { Link } from "react-router";
-import { CartButton } from "~/components/CartButton";
+import { CartButton } from "~/components/cart";
 import { Navbar } from "~/components/Navbar";
 import { SearchInput } from "~/components/SearchInput";
 
