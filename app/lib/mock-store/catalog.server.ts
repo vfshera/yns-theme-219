@@ -9,6 +9,7 @@ import type {
   Collection,
   LegalPage,
   MeResponse,
+  Post,
   Product,
   SocialsResponse,
 } from "./types";
@@ -363,6 +364,30 @@ export function getLegalPageBySlug(slug: string): LegalPage | null {
   const { data } = queryStore("legal-pages", ALL_ITEMS) as ApiList<LegalPage>;
 
   return data.find((page) => page.href === `/${slug}`) ?? null;
+}
+
+export function getPosts(limit: number): Post[] {
+  const params = new URLSearchParams({
+    active: "true",
+    limit: String(Math.max(limit, 48)),
+  });
+
+  return (queryStore("posts", params) as ApiList<Post>).data.slice(0, limit);
+}
+
+export function getPostBySlug(slug: string): Post | null {
+  const { data } = queryStore("posts", ALL_ITEMS) as ApiList<Post>;
+
+  return data.find((post) => post.slug === slug) ?? null;
+}
+
+/** Blog product embeds store ids; fixtures use the product id as its slug too. */
+export function getProductById(id: string): Product | null {
+  const { data } = queryStore("products", ALL_ITEMS) as ApiList<Product>;
+
+  return (
+    data.find((product) => product.id === id || product.slug === id) ?? null
+  );
 }
 
 /**

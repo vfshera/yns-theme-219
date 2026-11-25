@@ -1,5 +1,5 @@
 import { fixtures } from "./fixtures.server";
-import type { ApiList, Product, StoreResponse } from "./types";
+import type { ApiList, Post, Product, StoreResponse } from "./types";
 
 const DEFAULT_LIMIT = 12;
 const MAX_LIMIT = 100;
@@ -60,6 +60,12 @@ const browseProducts = (params: URLSearchParams): Product[] => {
   });
 };
 
+const browsePosts = (params: URLSearchParams): Post[] => {
+  const activeOnly = params.get("active") !== "false";
+
+  return fixtures.posts.filter((post) => !activeOnly || post.active);
+};
+
 type Handler = (params: URLSearchParams, origin: string) => StoreResponse;
 
 /** The single registry of mock endpoints. The HTTP route and server helpers share it. */
@@ -69,6 +75,7 @@ const handlers: Record<string, Handler> = {
   "products/filters": (params) => list([], params),
   categories: (params) => list(fixtures.categories, params),
   collections: (params) => list(fixtures.collections, params),
+  posts: (params) => list(browsePosts(params), params),
   socials: () => fixtures.socials,
   "legal-pages": (params) => list(fixtures.legalPages, params),
   brands: (params) => list([], params),

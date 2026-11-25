@@ -1,3 +1,5 @@
+import type { JSONContent } from "@tiptap/core";
+
 /** Minimal contracts for the Store API shapes this app actually uses. */
 export type ApiMeta = {
   count: number;
@@ -57,6 +59,20 @@ export type Collection = {
   metafieldRules: unknown[];
 };
 
+export type Post = {
+  id: string;
+  slug: string;
+  title: string;
+  active: boolean;
+  tag: string | null;
+  image: string | null;
+  publishedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+  content: JSONContent | null;
+  seo: { title: string; description: string; canonical: string } | null;
+};
+
 /**
  * Mock-only legal page shape. The real Store API supplies `contentHtml`; our fixtures use a
  * Markdown string so the demo pages can be authored simply. See the note in the legal route's
@@ -102,4 +118,5 @@ export type StoreResponse =
   | ApiList<Product>
   | ApiList<Category>
   | ApiList<Collection>
-  | ApiList<LegalPage>;
+  | ApiList<LegalPage>
+  | ApiList<Post>;
