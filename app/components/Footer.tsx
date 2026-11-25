@@ -44,6 +44,7 @@ function LinkList({ links }: { links: NavLink[] }) {
 export function Footer({
   info,
   shop,
+  legal,
 }: {
   info: {
     storeName: string;
@@ -52,6 +53,7 @@ export function Footer({
     socialLinks: { label: string; href: string }[];
   };
   shop: { label: string; links: NavLink[] };
+  legal: NavLink[];
 }) {
   const year = COPYRIGHT_YEAR;
   const browse = [
@@ -60,10 +62,10 @@ export function Footer({
     { href: "/about", label: "About" },
     ...(info.blog ? [{ href: "/blog", label: "Blog" }] : []),
   ];
-  // Legal pages are deferred with their mock endpoints.
   const help = [
     ...(info.contact ? [{ href: "/contact", label: "Contact" }] : []),
     { href: "/faq", label: "FAQs" },
+    ...legal,
   ];
 
   return (

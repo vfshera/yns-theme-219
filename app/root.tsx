@@ -10,7 +10,11 @@ import {
 import { Footer } from "~/components/Footer";
 import { Header } from "~/components/Header";
 import Provider from "~/components/Provider";
-import { getShopLinks, getStoreInfo } from "~/lib/mock-store/catalog.server";
+import {
+  getLegalLinks,
+  getShopLinks,
+  getStoreInfo,
+} from "~/lib/mock-store/catalog.server";
 import { getStoreConfig } from "~/lib/mock-store/config.server";
 import "./assets/css/app.css";
 
@@ -31,6 +35,7 @@ export function loader({ request }: Route.LoaderArgs) {
   return {
     info: getStoreInfo(),
     shop: getShopLinks(),
+    legal: getLegalLinks(),
     config: getStoreConfig(),
     origin: new URL(request.url).origin,
   };
@@ -88,7 +93,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App({ loaderData }: Route.ComponentProps) {
-  const { info, shop, config } = loaderData;
+  const { info, shop, legal, config } = loaderData;
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -96,7 +101,7 @@ export default function App({ loaderData }: Route.ComponentProps) {
       <main className="flex-1">
         <Outlet />
       </main>
-      <Footer info={info} shop={shop} />
+      <Footer info={info} shop={shop} legal={legal} />
     </div>
   );
 }
