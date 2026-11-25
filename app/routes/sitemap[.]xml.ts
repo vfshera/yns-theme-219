@@ -1,6 +1,7 @@
 import type { Route } from "./+types/sitemap[.]xml";
 import {
   getLegalLinks,
+  getPosts,
   getProducts,
   getShopLinks,
   getStoreInfo,
@@ -16,12 +17,16 @@ const escapeXml = (value: string) =>
 
 export function loader({ request }: Route.LoaderArgs) {
   const origin = new URL(request.url).origin;
+  const info = getStoreInfo();
   const paths = [
     "/",
     "/about",
     "/faq",
     "/products",
-    ...(getStoreInfo().contact ? ["/contact"] : []),
+    ...(info.contact ? ["/contact"] : []),
+    ...(info.blog
+      ? ["/blog", ...getPosts(100).map((post) => `/blog/${post.slug}`)]
+      : []),
     ...getShopLinks().links.map((link) => link.href),
     ...getLegalLinks().map((link) => link.href),
     ...getProducts(100).map((product) => `/product/${product.slug}`),
