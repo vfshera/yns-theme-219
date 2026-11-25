@@ -32,17 +32,89 @@ export function loader({ params }: Route.LoaderArgs) {
   };
 }
 
-export const meta: Route.MetaFunction = ({ loaderData }) => {
+export const meta: Route.MetaFunction = ({ loaderData, matches, location }) => {
   const product = loaderData?.product;
+  const { storeName, storeDescription } = matches[0].loaderData.info;
+  const origin = matches[0].loaderData.origin;
+  const url = `${origin}${location.pathname}`;
+  const title = product
+    ? `${product.name} | ${storeName}`
+    : "Product Not Found";
+  const description =
+    (product?.summary ?? null) ||
+    storeDescription ||
+    "Considered things for everyday living, in soft colours and simple shapes.";
+  const image = product?.images[0];
+  const ogImage = image ? `${origin}${image}` : undefined;
+  const variant = product?.variants[0];
 
   return [
-    { title: product?.name ?? "Product Not Found" },
+    { title },
+    { name: "description", content: description },
+    { tagName: "link", rel: "canonical", href: url },
+    { property: "og:type", content: "product" },
+    { property: "og:site_name", content: storeName },
+    { property: "og:url", content: url },
+    { property: "og:title", content: title },
+    { property: "og:description", content: description },
+    ...(ogImage ? [{ property: "og:image", content: ogImage }] : []),
+    {
+      name: "twitter:card",
+      content: ogImage ? "summary_large_image" : "summary",
+    },
+    { name: "twitter:title", content: title },
+    { name: "twitter:description", content: description },
+    ...(ogImage ? [{ name: "twitter:image", content: ogImage }] : []),
     ...(product
       ? [
           {
-            tagName: "link" as const,
-            rel: "canonical",
-            href: `/product/${product.slug}`,
+            "script:ld+json": {
+              "@context": "https://schema.org",
+              "@type": "Product",
+              name: product.name,
+              description,
+              ...(ogImage ? { image: [ogImage] } : {}),
+              ...(variant
+                ? {
+                    offers: {
+                      "@type": "Offer",
+                      price: (Number(variant.price) / 100).toFixed(2),
+                      priceCurrency: loaderData?.config.currency ?? "USD",
+                      availability:
+                        variant.stock > 0
+                          ? "https://schema.org/InStock"
+                          : "https://schema.org/OutOfStock",
+                      url,
+                    },
+                  }
+                : {}),
+            },
+          },
+          {
+            "script:ld+json": {
+              "@context": "https://schema.org",
+              "@type": "BreadcrumbList",
+              itemListElement: [
+                {
+                  "@type": "ListItem",
+                  position: 1,
+                  name: "Home",
+                  item: `${origin}/`,
+                },
+                {
+                  "@type": "ListItem",
+                  position: 2,
+                  name: "Products",
+                  item: `${origin}/products`,
+                },
+                {
+                  "@type": "ListItem",
+                  position: 3,
+                  name: product.name,
+                  item: url,
+                },
+              ],
+            },
           },
         ]
       : []),
