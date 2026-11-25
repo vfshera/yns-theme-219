@@ -27,16 +27,31 @@ export function loader() {
   };
 }
 
-export const meta: Route.MetaFunction = ({ loaderData }) => [
-  { title: "About Us" },
-  {
-    name: "description",
-    content: loaderData.info.storeDescription
-      ? `Learn more about ${loaderData.info.storeName}. ${loaderData.info.storeDescription}`
-      : `Learn about ${loaderData.info.storeName} — our story, our values, and the people behind the products.`,
-  },
-  { tagName: "link", rel: "canonical", href: "/about" },
-];
+export const meta: Route.MetaFunction = ({ loaderData, matches, location }) => {
+  const { storeName, storeDescription } = loaderData.info;
+  const origin = matches[0].loaderData.origin;
+  const url = `${origin}${location.pathname}`;
+  const description = storeDescription
+    ? `Learn more about ${storeName}. ${storeDescription}`
+    : `Learn about ${storeName} — our story, our values, and the people behind the products.`;
+  const ogImage = `${origin}${loaderData.image}`;
+
+  return [
+    { title: `About Us | ${storeName}` },
+    { name: "description", content: description },
+    { tagName: "link", rel: "canonical", href: url },
+    { property: "og:type", content: "website" },
+    { property: "og:site_name", content: storeName },
+    { property: "og:url", content: url },
+    { property: "og:title", content: `About Us | ${storeName}` },
+    { property: "og:description", content: description },
+    { property: "og:image", content: ogImage },
+    { name: "twitter:card", content: "summary_large_image" },
+    { name: "twitter:title", content: `About Us | ${storeName}` },
+    { name: "twitter:description", content: description },
+    { name: "twitter:image", content: ogImage },
+  ];
+};
 
 export default function About({ loaderData }: Route.ComponentProps) {
   const { info, image } = loaderData;

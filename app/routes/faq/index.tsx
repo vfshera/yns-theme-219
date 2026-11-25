@@ -4,7 +4,27 @@ import { Mail } from "lucide-react";
 import { faqCategories } from "./+/faq-data";
 import { FaqAccordion } from "./+/FaqAccordion";
 
-export const meta: Route.MetaFunction = () => [{ title: "FAQ" }];
+export const meta: Route.MetaFunction = ({ matches, location }) => {
+  const { storeName, storeDescription } = matches[0].loaderData.info;
+  const origin = matches[0].loaderData.origin;
+  const url = `${origin}${location.pathname}`;
+  const description =
+    storeDescription ?? `Answers to common questions about ${storeName}.`;
+
+  return [
+    { title: `FAQ | ${storeName}` },
+    { name: "description", content: description },
+    { tagName: "link", rel: "canonical", href: url },
+    { property: "og:type", content: "website" },
+    { property: "og:site_name", content: storeName },
+    { property: "og:url", content: url },
+    { property: "og:title", content: `FAQ | ${storeName}` },
+    { property: "og:description", content: description },
+    { name: "twitter:card", content: "summary" },
+    { name: "twitter:title", content: `FAQ | ${storeName}` },
+    { name: "twitter:description", content: description },
+  ];
+};
 
 export default function Faq() {
   return (

@@ -20,10 +20,45 @@ export function loader() {
   };
 }
 
-export const meta: Route.MetaFunction = ({ loaderData }) => [
-  { title: loaderData.info.storeName },
-  { tagName: "link", rel: "canonical", href: "/" },
-];
+export const meta: Route.MetaFunction = ({ loaderData, matches, location }) => {
+  const { storeName, storeDescription } = loaderData.info;
+  const origin = matches[0].loaderData.origin;
+  const url = `${origin}${location.pathname}`;
+  const description =
+    storeDescription ??
+    "Considered things for everyday living, in soft colours and simple shapes.";
+  const image = loaderData.products[0]?.images[0];
+  const ogImage = image ? `${origin}${image}` : undefined;
+
+  return [
+    { title: storeName },
+    { name: "description", content: description },
+    { tagName: "link", rel: "canonical", href: url },
+    { property: "og:type", content: "website" },
+    { property: "og:site_name", content: storeName },
+    { property: "og:url", content: url },
+    { property: "og:title", content: storeName },
+    { property: "og:description", content: description },
+    ...(ogImage ? [{ property: "og:image", content: ogImage }] : []),
+    {
+      name: "twitter:card",
+      content: ogImage ? "summary_large_image" : "summary",
+    },
+    { name: "twitter:title", content: storeName },
+    { name: "twitter:description", content: description },
+    ...(ogImage ? [{ name: "twitter:image", content: ogImage }] : []),
+    {
+      "script:ld+json": {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        name: storeName,
+        url,
+        description,
+        publisher: { "@type": "Organization", name: storeName },
+      },
+    },
+  ];
+};
 
 export default function Index({ loaderData }: Route.ComponentProps) {
   const { info, slides, tiles, products, config } = loaderData;
