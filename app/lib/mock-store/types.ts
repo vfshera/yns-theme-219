@@ -57,6 +57,20 @@ export type Collection = {
   metafieldRules: unknown[];
 };
 
+/**
+ * Mock-only legal page shape. The real Store API supplies `contentHtml`; our fixtures use a
+ * Markdown string so the demo pages can be authored simply. See the note in the legal route's
+ * Markdown renderer.
+ */
+export type LegalPage = {
+  id: string;
+  key: "terms" | "privacyPolicy" | "returns";
+  label: string;
+  href: string;
+  contentMarkdown: string;
+  updatedAt: string;
+};
+
 export type Store = {
   name: string;
   currency: string;
@@ -87,4 +101,5 @@ export type StoreResponse =
   | SocialsResponse
   | ApiList<Product>
   | ApiList<Category>
-  | ApiList<Collection>;
+  | ApiList<Collection>
+  | ApiList<LegalPage>;

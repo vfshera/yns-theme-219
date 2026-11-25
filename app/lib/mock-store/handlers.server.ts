@@ -70,7 +70,7 @@ const handlers: Record<string, Handler> = {
   categories: (params) => list(fixtures.categories, params),
   collections: (params) => list(fixtures.collections, params),
   socials: () => fixtures.socials,
-  "legal-pages": (params) => list([], params),
+  "legal-pages": (params) => list(fixtures.legalPages, params),
   brands: (params) => list([], params),
 };
 

@@ -7,6 +7,7 @@ import type {
   ApiList,
   Category,
   Collection,
+  LegalPage,
   MeResponse,
   Product,
   SocialsResponse,
@@ -346,6 +347,22 @@ export function getProductBySlug(slug: string): Product | null {
   const { data } = queryStore("products", ALL_ITEMS) as ApiList<Product>;
 
   return data.find((product) => product.slug === slug) ?? null;
+}
+
+/** Legal pages shown in the footer Help column, in the order the source Store API returns them. */
+export function getLegalLinks(): ShopLink[] {
+  const { data } = queryStore("legal-pages", ALL_ITEMS) as ApiList<LegalPage>;
+
+  return data.map((page) => ({
+    href: `/legal${page.href}`,
+    label: page.label,
+  }));
+}
+
+export function getLegalPageBySlug(slug: string): LegalPage | null {
+  const { data } = queryStore("legal-pages", ALL_ITEMS) as ApiList<LegalPage>;
+
+  return data.find((page) => page.href === `/${slug}`) ?? null;
 }
 
 /**

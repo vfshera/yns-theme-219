@@ -1,6 +1,7 @@
 import type {
   Category,
   Collection,
+  LegalPage,
   MeResponse,
   Product,
   SocialsResponse,
@@ -160,6 +161,55 @@ const COLLECTIONS = [
   },
 ] satisfies Collection[];
 
+const LEGAL_PAGES = [
+  {
+    id: "legal-terms",
+    key: "terms",
+    label: "Terms of Service",
+    href: "/terms",
+    updatedAt: "2026-01-15T00:00:00.000Z",
+    contentMarkdown: `## Using this store
+By placing an order with Lazora you agree to these terms. They cover how we sell our products and what you can expect from us.
+
+## Orders and prices
+- Prices are shown in USD and include tax where applicable.
+- We accept payment at checkout and send a confirmation once an order is placed.
+- **Orders cannot be changed** after they have been submitted.
+
+If something looks wrong with your order, please get in touch as soon as possible.`,
+  },
+  {
+    id: "legal-privacy",
+    key: "privacyPolicy",
+    label: "Privacy Policy",
+    href: "/privacy-policy",
+    updatedAt: "2026-01-15T00:00:00.000Z",
+    contentMarkdown: `## What we collect
+We keep only the details needed to process your order and answer your questions: your name, email address, delivery address and payment confirmation.
+
+## How we use it
+- To fulfil and deliver your order.
+- To reply to messages you send us.
+- To improve the store and avoid duplicate orders.
+
+We never sell your details. Questions about your data? See our [FAQ](/faq) or contact us.`,
+  },
+  {
+    id: "legal-returns",
+    key: "returns",
+    label: "Returns & Refunds",
+    href: "/returns",
+    updatedAt: "2026-01-15T00:00:00.000Z",
+    contentMarkdown: `## Returns
+If an item is not right, contact us within 30 days of delivery and we will arrange a return. Items should be unused and in their original packaging.
+
+## Refunds
+Once we receive the return, we refund the purchase price to your original payment method. Shipping costs are not refundable unless the item arrived damaged.
+
+For damaged or incorrect items, include photos in your message so we can help quickly.`,
+  },
+] satisfies LegalPage[];
+
 const STORE = {
   name: "Lazora",
   currency: "USD",
@@ -193,6 +243,7 @@ const SOCIALS = {
 export const fixtures = {
   categories: CATEGORIES,
   collections: COLLECTIONS,
+  legalPages: LEGAL_PAGES,
   products: PRODUCTS,
   socials: SOCIALS,
   me: (origin: string): MeResponse => ({
