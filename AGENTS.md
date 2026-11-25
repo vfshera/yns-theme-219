@@ -15,6 +15,7 @@ Use `bun` (`bun add`, `bun run`). Common scripts: `bun run dev`, `bun run typech
 
 - `app/routes.ts` exports `autoRoutes()` from `react-router-auto-routes` — don't hand-write route config.
 - Library conventions: `index.tsx` → `/`, `$param` → dynamic segment, `_layout.tsx` → layout, `_`-prefixed folder → pathless group.
+- Resource routes (no default UI export — only `loader`/`action`) use the **`.ts` extension**; routes that render a component use `.tsx`. Example: `app/routes/api/v1/$.ts` serves `/api/v1/*`. Route-scoped components in `+/` stay `.tsx`; route-scoped utils stay `.ts`.
 - Prefer flat route files (`app/routes/about.tsx`). Create a route folder only when the route has scoped files (`app/routes/faq/index.tsx` plus `app/routes/faq/+/faq-data.ts`).
 - Render app-wide chrome (header, footer, cart) in `app/root.tsx`. Don't add a pathless group solely to hold chrome for a single-shell storefront.
 
