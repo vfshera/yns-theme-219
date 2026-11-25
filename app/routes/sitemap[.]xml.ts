@@ -1,5 +1,6 @@
 import type { Route } from "./+types/sitemap[.]xml";
 import {
+  getLegalLinks,
   getProducts,
   getShopLinks,
   getStoreInfo,
@@ -22,6 +23,7 @@ export function loader({ request }: Route.LoaderArgs) {
     "/products",
     ...(getStoreInfo().contact ? ["/contact"] : []),
     ...getShopLinks().links.map((link) => link.href),
+    ...getLegalLinks().map((link) => link.href),
     ...getProducts(100).map((product) => `/product/${product.slug}`),
   ];
   const urls = [...new Set(paths)]
