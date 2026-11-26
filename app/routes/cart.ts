@@ -11,6 +11,7 @@ import {
   removeLine,
   upsertLine,
 } from "~/lib/mock-store/cart.server";
+import { getProductByVariantId } from "~/lib/mock-store/catalog.server";
 import type { CartResponse } from "~/lib/cart/types";
 
 const reply = (body: CartResponse, setCookie?: string) =>
@@ -41,6 +42,28 @@ const quantityFrom = (
   return Number.isInteger(value) && value >= 0 && value <= 99 ? value : null;
 };
 
+/** Server backstop: only active plans belonging to the variant's product may be used. */
+const planError = (variantId: string, planId: string | null): string | null => {
+  const product = getProductByVariantId(variantId);
+  if (!product) {
+    return "Product not found";
+  }
+
+  const plans = product.subscriptionPlanProducts
+    .map(({ subscriptionPlan }) => subscriptionPlan)
+    .filter((plan) => plan.active);
+
+  if (planId && !plans.some((plan) => plan.id === planId)) {
+    return "Invalid subscription plan";
+  }
+
+  if (product.subscriptionMode === "only" && !planId) {
+    return "Choose a subscription plan";
+  }
+
+  return null;
+};
+
 export async function loader({ request }: Route.LoaderArgs) {
   const id = await getCartCookie(request);
 
@@ -56,8 +79,14 @@ export async function action({ request }: Route.ActionArgs) {
     case "add": {
       const variantId = field(form, "variantId");
       const quantity = quantityFrom(form, 1);
+      const planId = field(form, "subscriptionPlanId");
       if (!variantId || quantity === null) {
         return invalid("Invalid product or quantity");
+      }
+
+      const error = planError(variantId, planId);
+      if (error) {
+        return invalid(error);
       }
 
       const existing = getCart(id);
@@ -73,7 +102,7 @@ export async function action({ request }: Route.ActionArgs) {
         setCookie = await serializeCartCookie(cartId);
       }
 
-      const cart = upsertLine({ id: cartId, variantId, quantity });
+      const cart = upsertLine({ id: cartId, variantId, quantity, planId });
 
       return cart ? reply({ cart }, setCookie) : invalid("Product not found");
     }
@@ -85,12 +114,18 @@ export async function action({ request }: Route.ActionArgs) {
       }
 
       const variantId = field(form, "variantId");
+      const planId = field(form, "subscriptionPlanId");
       if (!variantId) {
         return invalid("Invalid product");
       }
 
+      const error = planError(variantId, planId);
+      if (error) {
+        return invalid(error);
+      }
+
       if (intent === "remove") {
-        return reply({ cart: removeLine(id, variantId) });
+        return reply({ cart: removeLine(id, variantId, planId) });
       }
 
       const quantity = quantityFrom(form, null);
@@ -99,7 +134,7 @@ export async function action({ request }: Route.ActionArgs) {
       }
 
       return reply({
-        cart: upsertLine({ id, variantId, quantity, mode: "set" }),
+        cart: upsertLine({ id, variantId, quantity, mode: "set", planId }),
       });
     }
 

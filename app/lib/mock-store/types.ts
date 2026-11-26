@@ -31,6 +31,15 @@ export type Category = {
   description: string | null;
 };
 
+export type SubscriptionPlan = {
+  id: string;
+  name: string;
+  discountPercent: number;
+  benefits: string | null;
+  active: boolean;
+  position: number;
+};
+
 export type Product = {
   id: string;
   name: string;
@@ -41,7 +50,8 @@ export type Product = {
   summary: string | null;
   content: string | null;
   category: Category | null;
-  subscriptionMode: "optional";
+  subscriptionMode: "optional" | "only" | "rolling";
+  subscriptionPlanProducts: { subscriptionPlan: SubscriptionPlan }[];
   variants: ProductVariant[];
 };
 

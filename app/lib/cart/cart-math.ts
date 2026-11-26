@@ -1,16 +1,47 @@
 import { displayPrice } from "~/lib/pricing";
-import type { Cart, CartAction, CartLineItem } from "./types";
+import type {
+  Cart,
+  CartAction,
+  CartLineItem,
+  SubscriptionPlanLabel,
+} from "./types";
 import type { TaxBehavior } from "~/lib/pricing";
 
-export { type Cart, type CartLineItem, type CartAction } from "./types";
+export {
+  type Cart,
+  type CartLineItem,
+  type CartAction,
+  type SubscriptionPlanLabel,
+} from "./types";
 
-/** One line is one variant; the optional plan argument is kept for deferred subscriptions. */
+/** Minor-unit discount with the same thousandths math the platform uses for plans. */
+export const applyPercentDiscount = (
+  amount: bigint,
+  discountPercent: number,
+): bigint => {
+  if (discountPercent <= 0) {
+    return amount;
+  }
+
+  return (
+    amount - (amount * BigInt(Math.round(discountPercent * 1000))) / 100_000n
+  );
+};
+
+/** "Every month · Save 10%". The plan name carries its cadence. */
+export const planLabel = (plan: SubscriptionPlanLabel) =>
+  plan.discountPercent > 0
+    ? `${plan.name} · Save ${plan.discountPercent}%`
+    : plan.name;
+
+/** One line is one variant on one plan. */
 export const lineKey = (
   variantId: string,
   subscriptionPlanId?: string | null,
 ) => `${variantId}:${subscriptionPlanId ?? ""}`;
 
-export const itemKey = (item: CartLineItem) => lineKey(item.productVariant.id);
+export const itemKey = (item: CartLineItem) =>
+  lineKey(item.productVariant.id, item.subscriptionPlanId);
 
 /** The options that tell two lines of one product apart (empty for flat fixtures). */
 export const lineOptions = (item: CartLineItem) =>
@@ -27,8 +58,12 @@ export function getLineItemUnitPrice(
   taxBehavior: TaxBehavior,
 ): bigint {
   const price = displayPrice(item.productVariant, taxBehavior);
+  const unit = BigInt(price ?? item.productVariant.price);
 
-  return BigInt(price ?? item.productVariant.price);
+  return applyPercentDiscount(
+    unit,
+    item.subscriptionPlan?.discountPercent ?? 0,
+  );
 }
 
 /**

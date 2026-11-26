@@ -8,6 +8,7 @@ import type {
   ProductVariant,
   SocialsResponse,
   Store,
+  SubscriptionPlan,
 } from "./types";
 import type { JSONContent } from "@tiptap/core";
 import type { VariantCombination } from "~/lib/variants/types";
@@ -96,6 +97,7 @@ const makeProduct = (
   content: null,
   category: CATEGORIES.find((category) => category.id === categoryId) ?? null,
   subscriptionMode: "optional",
+  subscriptionPlanProducts: [],
   variants: variants ?? [
     {
       id: `v-${id}`,
@@ -175,14 +177,49 @@ const TOTE_VARIANTS = [
   },
 ] satisfies ProductVariant[];
 
-const stationerySet = makeProduct(
-  "pastel-stationery-set",
-  "Pastel Stationery Set",
-  "2400",
-  PHOTOS[0],
-  "cat-stationery",
-  STATIONERY_VARIANTS,
-);
+const STATIONERY_PLANS: SubscriptionPlan[] = [
+  {
+    id: "plan-monthly",
+    name: "Every month",
+    discountPercent: 10,
+    benefits: "Delivered monthly, cancel anytime",
+    active: true,
+    position: 0,
+  },
+  {
+    id: "plan-quarterly",
+    name: "Every 3 months",
+    discountPercent: 15,
+    benefits: "A slower cadence, a bigger saving",
+    active: true,
+    position: 1,
+  },
+];
+
+const NOTE_PAD_PLANS: SubscriptionPlan[] = [
+  {
+    id: "plan-note-pad-monthly",
+    name: "Every month",
+    discountPercent: 10,
+    benefits: "A fresh pad every month",
+    active: true,
+    position: 0,
+  },
+];
+
+const stationerySet: Product = {
+  ...makeProduct(
+    "pastel-stationery-set",
+    "Pastel Stationery Set",
+    "2400",
+    PHOTOS[0],
+    "cat-stationery",
+    STATIONERY_VARIANTS,
+  ),
+  subscriptionPlanProducts: STATIONERY_PLANS.map((subscriptionPlan) => ({
+    subscriptionPlan,
+  })),
+};
 const toteBag = makeProduct(
   "canvas-tote-bag",
   "Canvas Tote Bag",
@@ -220,6 +257,20 @@ const roomAccent = makeProduct(
   "cat-home",
 );
 
+const notePad: Product = {
+  ...makeProduct(
+    "note-pad",
+    "Pastel Note Pad",
+    "1200",
+    PHOTOS[0],
+    "cat-stationery",
+  ),
+  subscriptionMode: "only",
+  subscriptionPlanProducts: NOTE_PAD_PLANS.map((subscriptionPlan) => ({
+    subscriptionPlan,
+  })),
+};
+
 const PRODUCTS = [
   stationerySet,
   toteBag,
@@ -227,13 +278,7 @@ const PRODUCTS = [
   sunglasses,
   stillLifePrint,
   roomAccent,
-  makeProduct(
-    "note-pad",
-    "Pastel Note Pad",
-    "1200",
-    PHOTOS[0],
-    "cat-stationery",
-  ),
+  notePad,
   makeProduct(
     "weekend-bag",
     "Weekend Bag",

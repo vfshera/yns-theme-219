@@ -104,12 +104,12 @@
 
 @layer components {
   /* The original's hover sweep on dark buttons. */
-  .shimmer {
+  .btn-shimmer {
     position: relative;
     overflow: hidden;
   }
 
-  .shimmer:hover::after {
+  .btn-shimmer:hover::after {
     content: "";
     position: absolute;
     inset: 0;
@@ -133,7 +133,7 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .shimmer:hover::after {
+    .btn-shimmer:hover::after {
       animation: none;
     }
   }

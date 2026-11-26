@@ -22,8 +22,17 @@ export type CartVariant = {
   };
 };
 
+/** The plan metadata a line needs to name itself and price itself locally. */
+export type SubscriptionPlanLabel = {
+  name: string;
+  discountPercent: number;
+};
+
 export type CartLineItem = {
   quantity: number;
+  /** The plan this line renews on; absent or null for a one-time purchase. */
+  subscriptionPlanId?: string | null;
+  subscriptionPlan?: SubscriptionPlanLabel | null;
   productVariant: CartVariant;
 };
 

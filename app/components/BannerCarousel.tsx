@@ -91,7 +91,7 @@ export function BannerCarousel({ slides }: { slides: BannerSlide[] }) {
                   <Link
                     to={slide.href}
                     tabIndex={index === active ? undefined : -1}
-                    className="shimmer inline-flex h-11 w-max items-center gap-2 rounded-full bg-primary px-8 font-display text-lg font-light text-primary-foreground transition-colors hover:bg-primary/90"
+                    className="btn-shimmer inline-flex h-11 w-max items-center gap-2 rounded-full bg-primary px-8 font-display text-lg font-light text-primary-foreground transition-colors hover:bg-primary/90"
                   >
                     Shop now
                     <span className="sr-only">: {slide.title}</span>

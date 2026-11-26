@@ -81,7 +81,7 @@ export default function About({ loaderData }: Route.ComponentProps) {
             </p>
             <Link
               to="/products"
-              className="shimmer inline-flex h-11 w-max items-center gap-2 rounded-full bg-primary px-8 font-display text-lg font-light text-primary-foreground transition-colors hover:bg-primary/90"
+              className="btn-shimmer inline-flex h-11 w-max items-center gap-2 rounded-full bg-primary px-8 font-display text-lg font-light text-primary-foreground transition-colors hover:bg-primary/90"
             >
               Shop products
               <ArrowRight
@@ -148,7 +148,7 @@ export default function About({ loaderData }: Route.ComponentProps) {
         <div className="flex flex-wrap gap-3">
           <Link
             to="/products"
-            className="shimmer inline-flex h-10 items-center justify-center rounded-md bg-primary px-5 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+            className="btn-shimmer inline-flex h-10 items-center justify-center rounded-md bg-primary px-5 text-sm font-medium text-primary-foreground hover:bg-primary/90"
           >
             Shop products
           </Link>

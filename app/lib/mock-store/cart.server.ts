@@ -1,8 +1,13 @@
-import { itemKey, lineKey } from "~/lib/cart/cart-math";
+import { applyPercentDiscount, itemKey, lineKey } from "~/lib/cart/cart-math";
 import { getStoreConfig } from "./config.server";
 import { queryStore } from "./handlers.server";
 import type { ApiList, Product } from "./types";
-import type { Cart, CartLineItem, Coupon } from "~/lib/cart/types";
+import type {
+  Cart,
+  CartLineItem,
+  Coupon,
+  SubscriptionPlanLabel,
+} from "~/lib/cart/types";
 
 /**
  * Stateful sibling of the pure mock catalog. The Map stands in for the Store API's
@@ -21,7 +26,11 @@ const allProducts = (): Product[] =>
   (queryStore("products", ALL_PRODUCTS) as ApiList<Product>).data;
 
 /** Build a source-shaped line from any fixture variant, including multi-variant ones. */
-function makeLine(variantId: string, quantity: number): CartLineItem | null {
+function makeLine(
+  variantId: string,
+  quantity: number,
+  planId?: string | null,
+): CartLineItem | null {
   const product = allProducts().find((entry) =>
     entry.variants.some((variant) => variant.id === variantId),
   );
@@ -31,8 +40,26 @@ function makeLine(variantId: string, quantity: number): CartLineItem | null {
     return null;
   }
 
+  let subscriptionPlan: SubscriptionPlanLabel | null = null;
+  if (planId) {
+    const plan = product.subscriptionPlanProducts
+      .map(({ subscriptionPlan: entry }) => entry)
+      .find((entry) => entry.id === planId && entry.active);
+
+    if (!plan) {
+      return null;
+    }
+
+    subscriptionPlan = {
+      name: plan.name,
+      discountPercent: plan.discountPercent,
+    };
+  }
+
   return {
     quantity,
+    subscriptionPlanId: planId ?? null,
+    subscriptionPlan,
     productVariant: {
       id: variant.id,
       price: variant.price,
@@ -57,8 +84,16 @@ function reprice(cart: Cart): Cart {
 
   for (const item of cart.lineItems) {
     const quantity = BigInt(item.quantity);
-    net += BigInt(item.productVariant.price) * quantity;
-    gross += BigInt(item.productVariant.priceGross) * quantity;
+    const percent = item.subscriptionPlan?.discountPercent ?? 0;
+
+    net += applyPercentDiscount(
+      BigInt(item.productVariant.price) * quantity,
+      percent,
+    );
+    gross += applyPercentDiscount(
+      BigInt(item.productVariant.priceGross) * quantity,
+      percent,
+    );
   }
 
   let subtotalNet = Number(net);
@@ -112,18 +147,20 @@ export function upsertLine({
   variantId,
   quantity,
   mode = "add",
+  planId = null,
 }: {
   id: string;
   variantId: string;
   quantity: number;
   mode?: "add" | "set";
+  planId?: string | null;
 }): Cart | null {
   const cart = getCart(id);
   if (!cart) {
     return null;
   }
 
-  const line = makeLine(variantId, quantity);
+  const line = makeLine(variantId, quantity, planId);
   if (!line) {
     return null;
   }
@@ -155,13 +192,17 @@ export function upsertLine({
   return next;
 }
 
-export function removeLine(id: string, variantId: string): Cart | null {
+export function removeLine(
+  id: string,
+  variantId: string,
+  planId?: string | null,
+): Cart | null {
   const cart = getCart(id);
   if (!cart) {
     return null;
   }
 
-  const key = lineKey(variantId);
+  const key = lineKey(variantId, planId);
   const lineItems = cart.lineItems.filter((item) => itemKey(item) !== key);
 
   if (lineItems.length === cart.lineItems.length) {

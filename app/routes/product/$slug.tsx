@@ -31,6 +31,16 @@ export function loader({ params }: Route.LoaderArgs) {
   return {
     product,
     variants: sortVariantsByOptions(product.variants),
+    plans: product.subscriptionPlanProducts
+      .map(({ subscriptionPlan }) => subscriptionPlan)
+      .filter((plan) => plan.active)
+      .sort((a, b) => a.position - b.position)
+      .map(({ id, name, discountPercent, benefits }) => ({
+        id,
+        name,
+        discountPercent,
+        benefits,
+      })),
     config: getStoreConfig(),
     related: getRelatedProducts(product.id, product.category?.slug),
   };
@@ -157,7 +167,7 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
 }
 
 export default function Product({ loaderData }: Route.ComponentProps) {
-  const { product, variants, config, related } = loaderData;
+  const { product, variants, plans, config, related } = loaderData;
   const { selectedVariant, selectedOptions } = useSelectedVariant(variants);
   const galleryImages = selectedVariant?.images.length
     ? selectedVariant.images
@@ -214,6 +224,8 @@ export default function Product({ loaderData }: Route.ComponentProps) {
             variants={variants}
             selectedVariant={selectedVariant}
             selectedOptions={selectedOptions}
+            plans={plans}
+            subscriptionMode={product.subscriptionMode}
           />
           {/* Deferred: subscriptions and bundles. */}
 

@@ -6,6 +6,7 @@ import {
   getLineItemUnitPrice,
   itemKey,
   lineOptions,
+  planLabel,
 } from "~/lib/cart/cart-math";
 import { formatMoney } from "~/lib/format-money";
 import { useCart } from "./CartProvider";
@@ -21,6 +22,7 @@ export function CartItem({ item }: { item: CartLineItem }) {
   const { productVariant, quantity } = item;
   const { product } = productVariant;
   const options = lineOptions(item);
+  const planName = item.subscriptionPlan && planLabel(item.subscriptionPlan);
   const image = productVariant.images[0] ?? product.images[0];
   const lineTotal = getLineItemUnitPrice(item, taxBehavior) * BigInt(quantity);
 
@@ -46,8 +48,11 @@ export function CartItem({ item }: { item: CartLineItem }) {
   const submit = (fields: Record<string, string>, optimistic: CartAction) => {
     dispatch(optimistic);
 
+    const allFields = item.subscriptionPlanId
+      ? { ...fields, subscriptionPlanId: item.subscriptionPlanId }
+      : fields;
     const form = new FormData();
-    for (const [key, value] of Object.entries(fields)) {
+    for (const [key, value] of Object.entries(allFields)) {
       form.append(key, value);
     }
 
@@ -117,6 +122,9 @@ export function CartItem({ item }: { item: CartLineItem }) {
             </Link>
             {options && (
               <p className="text-xs text-muted-foreground">{options}</p>
+            )}
+            {planName && (
+              <p className="text-xs text-muted-foreground">{planName}</p>
             )}
           </div>
           <button

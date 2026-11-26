@@ -56,7 +56,7 @@ export function CartSidebar() {
             <p className="mb-6 w-4/5 text-sm text-muted-foreground">
               Have a look around the shop and add whatever catches your eye.
             </p>
-            <Button className="shimmer rounded-md" onClick={closeCart}>
+            <Button className="btn-shimmer rounded-md" onClick={closeCart}>
               Continue shopping
             </Button>
           </div>
@@ -122,7 +122,7 @@ export function CartSidebar() {
                   }}
                   className={cn(
                     buttonVariants(),
-                    "shimmer h-11 w-full rounded-md text-base font-medium",
+                    "btn-shimmer h-11 w-full rounded-md text-base font-medium",
                     isMutating && "pointer-events-none opacity-60",
                   )}
                 >

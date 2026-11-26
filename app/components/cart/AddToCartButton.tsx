@@ -2,10 +2,8 @@ import { useEffect, useRef } from "react";
 import { useFetcher } from "react-router";
 import { ShoppingCart } from "lucide-react";
 import { toast } from "sonner";
-import { formatListingPrice } from "~/lib/format-money";
 import { useCart } from "./CartProvider";
-import { useCartConfig } from "./use-cart-config";
-import type { CartResponse } from "~/lib/cart/types";
+import type { CartResponse, SubscriptionPlanLabel } from "~/lib/cart/types";
 import type { VariantCombination } from "~/lib/variants/types";
 
 type Variant = {
@@ -22,16 +20,20 @@ export function AddToCartButton({
   product,
   variant,
   quantity = 1,
+  planId = null,
+  plan = null,
+  disabled = false,
 }: {
   product: { id: string; name: string; slug: string; images: string[] };
   variant: Variant | undefined;
   quantity?: number;
+  planId?: string | null;
+  plan?: SubscriptionPlanLabel | null;
+  disabled?: boolean;
 }) {
-  const config = useCartConfig();
   const { dispatch, syncCart, reconcile, mutate, openCart } = useCart();
   const fetcher = useFetcher<CartResponse>();
   const synced = useRef<CartResponse | null>(null);
-  const price = formatListingPrice(variant ? [variant] : [], config);
   const soldOut = (variant?.stock ?? 0) <= 0;
 
   useEffect(() => {
@@ -59,7 +61,13 @@ export function AddToCartButton({
   ]);
 
   const add = () => {
-    if (!variant || soldOut || quantity < 1 || quantity > variant.stock) {
+    if (
+      !variant ||
+      disabled ||
+      soldOut ||
+      quantity < 1 ||
+      quantity > variant.stock
+    ) {
       return;
     }
 
@@ -68,6 +76,8 @@ export function AddToCartButton({
       type: "ADD_ITEM",
       item: {
         quantity,
+        subscriptionPlanId: planId,
+        subscriptionPlan: plan,
         productVariant: {
           id: variant.id,
           price: variant.price,
@@ -83,6 +93,9 @@ export function AddToCartButton({
     form.append("intent", "add");
     form.append("variantId", variant.id);
     form.append("quantity", String(quantity));
+    if (planId) {
+      form.append("subscriptionPlanId", planId);
+    }
 
     mutate(
       () => void fetcher.submit(form, { method: "post", action: "/cart" }),
@@ -96,20 +109,23 @@ export function AddToCartButton({
         ? "Select options"
         : soldOut
           ? "Out of stock"
-          : "Add to cart";
+          : disabled
+            ? "Unavailable"
+            : plan
+              ? plan.discountPercent > 0
+                ? `Subscribe & save ${plan.discountPercent}%`
+                : "Subscribe"
+              : "Add to cart";
 
   return (
-    <div className="flex flex-col gap-3">
-      {price && <span className="text-lg font-semibold">{price}</span>}
-      <button
-        type="button"
-        onClick={add}
-        disabled={!variant || soldOut || fetcher.state !== "idle"}
-        className="shimmer inline-flex h-10 items-center gap-2 rounded-md bg-primary px-5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
-      >
-        {label}
-        <ShoppingCart className="size-4" strokeWidth={1.5} aria-hidden="true" />
-      </button>
-    </div>
+    <button
+      type="button"
+      onClick={add}
+      disabled={!variant || disabled || soldOut || fetcher.state !== "idle"}
+      className="btn-shimmer inline-flex h-10 items-center gap-2 rounded-md bg-primary px-5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
+    >
+      {label}
+      <ShoppingCart className="size-4" strokeWidth={1.5} aria-hidden="true" />
+    </button>
   );
 }

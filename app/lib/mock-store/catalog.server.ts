@@ -350,6 +350,17 @@ export function getProductBySlug(slug: string): Product | null {
   return data.find((product) => product.slug === slug) ?? null;
 }
 
+/** The product owning a variant, used by the cart to validate subscription plans. */
+export function getProductByVariantId(variantId: string): Product | null {
+  const { data } = queryStore("products", ALL_ITEMS) as ApiList<Product>;
+
+  return (
+    data.find((product) =>
+      product.variants.some((variant) => variant.id === variantId),
+    ) ?? null
+  );
+}
+
 /** Legal pages shown in the footer Help column, in the order the source Store API returns them. */
 export function getLegalLinks(): ShopLink[] {
   const { data } = queryStore("legal-pages", ALL_ITEMS) as ApiList<LegalPage>;
