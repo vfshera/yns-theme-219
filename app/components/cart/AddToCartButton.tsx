@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { useCart } from "./CartProvider";
 import type { CartResponse, SubscriptionPlanLabel } from "~/lib/cart/types";
 import type { VariantCombination } from "~/lib/variants/types";
+import type { VolumeTier } from "~/lib/volume-pricing";
 
 type Variant = {
   id: string;
@@ -24,7 +25,13 @@ export function AddToCartButton({
   plan = null,
   disabled = false,
 }: {
-  product: { id: string; name: string; slug: string; images: string[] };
+  product: {
+    id: string;
+    name: string;
+    slug: string;
+    images: string[];
+    volumePricingTiers?: VolumeTier[] | null;
+  };
   variant: Variant | undefined;
   quantity?: number;
   planId?: string | null;

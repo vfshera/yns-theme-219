@@ -40,6 +40,7 @@ export function loader({ params }: Route.LoaderArgs) {
     variants: sortVariantsByOptions(product.variants),
     bundle: product.bundle ?? null,
     pricing: bundlePricing(product),
+    volumePricingTiers: product.volumePricingTiers ?? null,
     plans: product.subscriptionPlanProducts
       .map(({ subscriptionPlan }) => subscriptionPlan)
       .filter((plan) => plan.active)
@@ -200,8 +201,16 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
 }
 
 export default function Product({ loaderData }: Route.ComponentProps) {
-  const { product, variants, bundle, pricing, plans, config, related } =
-    loaderData;
+  const {
+    product,
+    variants,
+    bundle,
+    pricing,
+    volumePricingTiers,
+    plans,
+    config,
+    related,
+  } = loaderData;
   const { selectedVariant, selectedOptions } = useSelectedVariant(variants);
   // Full media list: product photos first, then distinct variant photos; the gallery keeps them all.
   const galleryImages = [
@@ -269,12 +278,14 @@ export default function Product({ loaderData }: Route.ComponentProps) {
                 name: product.name,
                 slug: product.slug,
                 images: product.images,
+                volumePricingTiers,
               }}
               variants={variants}
               selectedVariant={selectedVariant}
               selectedOptions={selectedOptions}
               plans={plans}
               subscriptionMode={product.subscriptionMode}
+              volumePricingTiers={volumePricingTiers}
             />
           )}
 

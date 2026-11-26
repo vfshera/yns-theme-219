@@ -1,6 +1,7 @@
 import { bundleUnitPrice } from "~/lib/bundles/pricing";
 import { bundleKey } from "~/lib/bundles/selections";
 import { displayPrice } from "~/lib/pricing";
+import { volumeUnitPrice } from "~/lib/volume-pricing";
 import type {
   Cart,
   CartAction,
@@ -84,7 +85,10 @@ export function getLineItemUnitPrice(
     return bundleUnitPrice(item.bundle, taxBehavior);
   }
 
-  const price = displayPrice(item.productVariant, taxBehavior);
+  const tiers = item.productVariant.product.volumePricingTiers;
+  const price = tiers
+    ? volumeUnitPrice(tiers, item.productVariant.id, item.quantity, taxBehavior)
+    : displayPrice(item.productVariant, taxBehavior);
   const unit = BigInt(price ?? item.productVariant.price);
 
   return applyPercentDiscount(

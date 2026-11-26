@@ -1,13 +1,17 @@
 import { useState } from "react";
 import { AddToCartButton, useCartConfig } from "~/components/cart";
 import { formatListingPrice } from "~/lib/format-money";
+import { displayPrice } from "~/lib/pricing";
+import { resolveVolumeTier } from "~/lib/volume-pricing";
 import { PriceDisplay } from "./PriceDisplay";
 import { QuantitySelector } from "./QuantitySelector";
 import { SubscriptionOptions } from "./SubscriptionOptions";
 import { VariantSelector } from "./VariantSelector";
+import { VolumePricingDisplay } from "./VolumePricing";
 import type { PlanOption } from "./SubscriptionOptions";
 import type { VariantCombination } from "~/lib/variants/types";
 import type { VariantWithOptions } from "~/lib/variants/types";
+import type { VolumeTier } from "~/lib/volume-pricing";
 
 export type PurchaseVariant = Omit<VariantWithOptions, "combinations"> & {
   combinations: VariantCombination[];
@@ -24,13 +28,21 @@ export function PurchasePanel({
   selectedOptions,
   plans,
   subscriptionMode,
+  volumePricingTiers,
 }: {
-  product: { id: string; name: string; slug: string; images: string[] };
+  product: {
+    id: string;
+    name: string;
+    slug: string;
+    images: string[];
+    volumePricingTiers?: VolumeTier[] | null;
+  };
   variants: readonly PurchaseVariant[];
   selectedVariant: PurchaseVariant | undefined;
   selectedOptions: Record<string, string>;
   plans: readonly PlanOption[];
   subscriptionMode: "optional" | "only" | "rolling";
+  volumePricingTiers: VolumeTier[] | null;
 }) {
   const config = useCartConfig();
   const price = formatListingPrice(
@@ -60,6 +72,14 @@ export function PurchasePanel({
     allowOneTime || (subscriptionMode === "only" && plan !== null);
   const soldOut =
     selectedVariant?.stock !== null && (selectedVariant?.stock ?? 0) <= 0;
+  const volumeTier = resolveVolumeTier(
+    volumePricingTiers,
+    selectedVariant?.id ?? "",
+    quantity,
+  );
+  const volumePrice = volumeTier
+    ? (displayPrice(volumeTier, config.taxBehavior) ?? volumeTier.price)
+    : null;
 
   return (
     <div className="flex flex-col gap-6">
@@ -78,9 +98,20 @@ export function PurchasePanel({
       )}
       <div className="flex flex-col gap-3">
         {selectedVariant ? (
-          <PriceDisplay variant={selectedVariant} config={config} />
+          <PriceDisplay
+            variant={selectedVariant}
+            config={config}
+            priceOverride={volumePrice}
+            quantity={quantity}
+          />
         ) : (
           price && <span className="text-lg font-semibold">{price}</span>
+        )}
+        {volumePricingTiers && volumePricingTiers.length > 0 && (
+          <VolumePricingDisplay
+            tiers={volumePricingTiers}
+            quantity={quantity}
+          />
         )}
         <div className="flex flex-wrap items-center gap-4">
           <QuantitySelector

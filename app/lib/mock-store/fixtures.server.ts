@@ -96,6 +96,7 @@ const makeProduct = (
   images: [image],
   summary: null,
   content: null,
+  volumePricingTiers: null,
   category: CATEGORIES.find((category) => category.id === categoryId) ?? null,
   subscriptionMode: "optional",
   subscriptionPlanProducts: [],
@@ -225,6 +226,25 @@ const stationerySet: Product = {
   ),
   // Two product photos give the media gallery a thumbnail strip; variants add their own.
   images: [PHOTOS[0], PHOTOS[4]],
+  // Product-wide tiers: 3+ at $22, 5+ at $20. Variant prices stay unchanged for qty 1.
+  volumePricingTiers: [
+    {
+      id: "tier-stationery-3",
+      price: "2200",
+      priceGross: "2200",
+      minQuantity: 3,
+      maxQuantity: 4,
+      productVariantId: null,
+    },
+    {
+      id: "tier-stationery-5",
+      price: "2000",
+      priceGross: "2000",
+      minQuantity: 5,
+      maxQuantity: null,
+      productVariantId: null,
+    },
+  ],
   subscriptionPlanProducts: STATIONERY_PLANS.map((subscriptionPlan) => ({
     subscriptionPlan,
   })),

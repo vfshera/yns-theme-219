@@ -16,16 +16,21 @@ type SaleConfig = {
 };
 
 /** Source parity: a compare-at price is shown only when the list price is higher. */
-export function getSaleInfo(variant: SaleVariant, config: SaleConfig) {
+export function getSaleInfo(
+  variant: SaleVariant,
+  config: SaleConfig,
+  priceOverride?: string | null,
+) {
   const price = BigInt(
-    displayPrice(variant, config.taxBehavior) ?? variant.price,
+    priceOverride ?? displayPrice(variant, config.taxBehavior) ?? variant.price,
   );
-  const listPrice = BigInt(
-    displayPrice(variant, config.taxBehavior, "originalPrice") ??
-      displayPrice(variant, config.taxBehavior) ??
-      variant.price,
+  const compareAtSource = displayPrice(
+    variant,
+    config.taxBehavior,
+    "originalPrice",
   );
-  const onSale = listPrice > price;
+  const listPrice = compareAtSource ? BigInt(compareAtSource) : null;
+  const onSale = listPrice !== null && listPrice > price;
   const format = (amount: bigint) =>
     formatMoney({
       amount,
@@ -45,11 +50,28 @@ export function getSaleInfo(variant: SaleVariant, config: SaleConfig) {
 export function PriceDisplay({
   variant,
   config,
+  priceOverride = null,
+  quantity = 1,
 }: {
   variant: SaleVariant;
   config: SaleConfig;
+  /** A volume-tier unit price, already selected for the store's tax behavior. */
+  priceOverride?: string | null;
+  quantity?: number;
 }) {
-  const { display, compareAt, discountPercent } = getSaleInfo(variant, config);
+  const { display, compareAt, discountPercent } = getSaleInfo(
+    variant,
+    config,
+    priceOverride,
+  );
+  const total =
+    priceOverride && quantity > 1
+      ? formatMoney({
+          amount: BigInt(priceOverride) * BigInt(quantity),
+          currency: config.currency,
+          locale: config.locale,
+        })
+      : null;
 
   return (
     <div className="mb-3 flex flex-wrap items-baseline gap-x-3 gap-y-1">
@@ -64,6 +86,9 @@ export function PriceDisplay({
           −{discountPercent}%
         </span>
       ) : null}
+      {total && (
+        <span className="text-sm text-muted-foreground">{total} total</span>
+      )}
     </div>
   );
 }

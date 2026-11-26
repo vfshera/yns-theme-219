@@ -2,6 +2,7 @@
 
 import type { BundleLine } from "~/lib/bundles/types";
 import type { VariantCombination } from "~/lib/variants/types";
+import type { VolumeTier } from "~/lib/volume-pricing";
 
 export type Coupon = {
   code: string;
@@ -20,6 +21,8 @@ export type CartVariant = {
     name: string;
     slug: string;
     images: string[];
+    /** Carried so both repricers can resolve volume tiers from plain cart data. */
+    volumePricingTiers?: VolumeTier[] | null;
   };
 };
 

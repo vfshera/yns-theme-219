@@ -11,6 +11,7 @@ import {
 } from "~/components/ui/tooltip";
 import type { CartLineItem, CartResponse } from "~/lib/cart/types";
 import type { VariantCombination } from "~/lib/variants/types";
+import type { VolumeTier } from "~/lib/volume-pricing";
 
 /**
  * The card's client island: a nested button inside the card's <Link>, so it cancels
@@ -30,7 +31,13 @@ export function QuickAddButton({
   variantPriceGross: string;
   variantImages: string[];
   variantCombinations: VariantCombination[];
-  product: { id: string; name: string; slug: string; images: string[] };
+  product: {
+    id: string;
+    name: string;
+    slug: string;
+    images: string[];
+    volumePricingTiers?: VolumeTier[] | null;
+  };
 }) {
   const { dispatch, syncCart, reconcile, mutate, openCart } = useCart();
   const fetcher = useFetcher<CartResponse>();

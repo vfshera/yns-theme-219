@@ -4,6 +4,7 @@ import {
   resolveBundleSelections,
 } from "~/lib/bundles/selections";
 import { applyPercentDiscount, itemKey, lineKey } from "~/lib/cart/cart-math";
+import { resolveVolumeTier } from "~/lib/volume-pricing";
 import { getStoreConfig } from "./config.server";
 import { queryStore } from "./handlers.server";
 import type { ApiList, Product } from "./types";
@@ -81,6 +82,7 @@ function makeLine(
         name: product.name,
         slug: product.slug,
         images: product.images,
+        volumePricingTiers: product.volumePricingTiers ?? null,
       },
     },
   };
@@ -122,12 +124,27 @@ function reprice(cart: Cart): Cart {
   for (const item of cart.lineItems) {
     const quantity = BigInt(item.quantity);
     const percent = item.subscriptionPlan?.discountPercent ?? 0;
+    const tier = item.bundle
+      ? null
+      : resolveVolumeTier(
+          item.productVariant.product.volumePricingTiers,
+          item.productVariant.id,
+          item.quantity,
+        );
     const netUnit = item.bundle
       ? bundleUnitPrice(item.bundle, "exclusive")
-      : applyPercentDiscount(BigInt(item.productVariant.price), percent);
+      : applyPercentDiscount(
+          BigInt(tier?.price ?? item.productVariant.price),
+          percent,
+        );
     const grossUnit = item.bundle
       ? bundleUnitPrice(item.bundle, "inclusive")
-      : applyPercentDiscount(BigInt(item.productVariant.priceGross), percent);
+      : applyPercentDiscount(
+          BigInt(
+            tier?.priceGross ?? tier?.price ?? item.productVariant.priceGross,
+          ),
+          percent,
+        );
 
     net += netUnit * quantity;
     gross += grossUnit * quantity;

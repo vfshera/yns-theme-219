@@ -5,6 +5,7 @@ import { formatListingPrice } from "~/lib/format-money";
 import { cn } from "~/lib/utils";
 import type { TaxBehavior } from "~/lib/pricing";
 import type { VariantCombination } from "~/lib/variants/types";
+import type { VolumeTier } from "~/lib/volume-pricing";
 
 export type CardVariant = {
   id: string;
@@ -23,6 +24,7 @@ export type CardProduct = {
   category: { name: string } | null;
   type?: "product" | "bundle";
   subscriptionMode?: "optional" | "only" | "rolling";
+  volumePricingTiers?: VolumeTier[] | null;
   variants: CardVariant[];
 };
 
@@ -133,6 +135,7 @@ export function ProductCard({
               name: product.name,
               slug: product.slug,
               images: product.images,
+              volumePricingTiers: product.volumePricingTiers ?? null,
             }}
           />
         )}
