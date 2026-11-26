@@ -1,7 +1,13 @@
+import { bundlePricing, bundleUnitPrice } from "~/lib/bundles/pricing";
+import {
+  bundleItemResolver,
+  resolveBundleSelections,
+} from "~/lib/bundles/selections";
 import { applyPercentDiscount, itemKey, lineKey } from "~/lib/cart/cart-math";
 import { getStoreConfig } from "./config.server";
 import { queryStore } from "./handlers.server";
 import type { ApiList, Product } from "./types";
+import type { BundleLine, BundleSelection } from "~/lib/bundles/types";
 import type {
   Cart,
   CartLineItem,
@@ -30,6 +36,7 @@ function makeLine(
   variantId: string,
   quantity: number,
   planId?: string | null,
+  bundle: BundleLine | null = null,
 ): CartLineItem | null {
   const product = allProducts().find((entry) =>
     entry.variants.some((variant) => variant.id === variantId),
@@ -41,7 +48,9 @@ function makeLine(
   }
 
   let subscriptionPlan: SubscriptionPlanLabel | null = null;
-  if (planId) {
+  if (bundle) {
+    planId = null;
+  } else if (planId) {
     const plan = product.subscriptionPlanProducts
       .map(({ subscriptionPlan: entry }) => entry)
       .find((entry) => entry.id === planId && entry.active);
@@ -60,6 +69,7 @@ function makeLine(
     quantity,
     subscriptionPlanId: planId ?? null,
     subscriptionPlan,
+    bundle,
     productVariant: {
       id: variant.id,
       price: variant.price,
@@ -76,6 +86,33 @@ function makeLine(
   };
 }
 
+/** Build a priced bundle descriptor for a cart line from a validated selection set. */
+export function makeBundleLine(
+  product: Product,
+  selections: readonly BundleSelection[],
+): BundleLine | null {
+  if (product.type !== "bundle" || !product.bundle) {
+    return null;
+  }
+
+  const resolved = resolveBundleSelections(
+    selections,
+    bundleItemResolver(product.bundle),
+  );
+
+  if (!resolved) {
+    return null;
+  }
+
+  return {
+    id: product.id,
+    name: product.name,
+    pricing: bundlePricing(product),
+    discountPercentage: product.bundle.discountPercentage,
+    selections: resolved,
+  };
+}
+
 /** Recompute net/gross totals (minor units) after every mutation, applying the coupon. */
 function reprice(cart: Cart): Cart {
   const { taxBehavior } = getStoreConfig();
@@ -85,15 +122,15 @@ function reprice(cart: Cart): Cart {
   for (const item of cart.lineItems) {
     const quantity = BigInt(item.quantity);
     const percent = item.subscriptionPlan?.discountPercent ?? 0;
+    const netUnit = item.bundle
+      ? bundleUnitPrice(item.bundle, "exclusive")
+      : applyPercentDiscount(BigInt(item.productVariant.price), percent);
+    const grossUnit = item.bundle
+      ? bundleUnitPrice(item.bundle, "inclusive")
+      : applyPercentDiscount(BigInt(item.productVariant.priceGross), percent);
 
-    net += applyPercentDiscount(
-      BigInt(item.productVariant.price) * quantity,
-      percent,
-    );
-    gross += applyPercentDiscount(
-      BigInt(item.productVariant.priceGross) * quantity,
-      percent,
-    );
+    net += netUnit * quantity;
+    gross += grossUnit * quantity;
   }
 
   let subtotalNet = Number(net);
@@ -148,19 +185,21 @@ export function upsertLine({
   quantity,
   mode = "add",
   planId = null,
+  bundle = null,
 }: {
   id: string;
   variantId: string;
   quantity: number;
   mode?: "add" | "set";
   planId?: string | null;
+  bundle?: BundleLine | null;
 }): Cart | null {
   const cart = getCart(id);
   if (!cart) {
     return null;
   }
 
-  const line = makeLine(variantId, quantity, planId);
+  const line = makeLine(variantId, quantity, planId, bundle);
   if (!line) {
     return null;
   }
@@ -196,13 +235,14 @@ export function removeLine(
   id: string,
   variantId: string,
   planId?: string | null,
+  bundleSelections?: readonly BundleSelection[] | null,
 ): Cart | null {
   const cart = getCart(id);
   if (!cart) {
     return null;
   }
 
-  const key = lineKey(variantId, planId);
+  const key = lineKey(variantId, planId, bundleSelections);
   const lineItems = cart.lineItems.filter((item) => itemKey(item) !== key);
 
   if (lineItems.length === cart.lineItems.length) {

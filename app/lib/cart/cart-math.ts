@@ -1,3 +1,5 @@
+import { bundleUnitPrice } from "~/lib/bundles/pricing";
+import { bundleKey } from "~/lib/bundles/selections";
 import { displayPrice } from "~/lib/pricing";
 import type {
   Cart,
@@ -5,6 +7,7 @@ import type {
   CartLineItem,
   SubscriptionPlanLabel,
 } from "./types";
+import type { BundleLine, BundleSelection } from "~/lib/bundles/types";
 import type { TaxBehavior } from "~/lib/pricing";
 
 export {
@@ -34,14 +37,34 @@ export const planLabel = (plan: SubscriptionPlanLabel) =>
     ? `${plan.name} · Save ${plan.discountPercent}%`
     : plan.name;
 
-/** One line is one variant on one plan. */
+/** "Blush / A5 ×1 / Weekend Bag ×2", for the cart sidebar. */
+export const bundleLabel = (bundle: BundleLine | null | undefined) =>
+  (bundle?.selections ?? [])
+    .map(
+      (selection) =>
+        `${selection.label}${selection.quantity > 1 ? ` ×${selection.quantity}` : ""}`,
+    )
+    .join(" / ");
+
+/** One line is one variant on one plan, or one bundle with one set of picks. */
 export const lineKey = (
   variantId: string,
   subscriptionPlanId?: string | null,
-) => `${variantId}:${subscriptionPlanId ?? ""}`;
+  bundleSelections?: readonly BundleSelection[] | null,
+) => {
+  const bundleSuffix = bundleSelections?.length
+    ? `#${bundleKey(bundleSelections)}`
+    : "";
+
+  return `${variantId}:${subscriptionPlanId ?? ""}${bundleSuffix}`;
+};
 
 export const itemKey = (item: CartLineItem) =>
-  lineKey(item.productVariant.id, item.subscriptionPlanId);
+  lineKey(
+    item.productVariant.id,
+    item.subscriptionPlanId,
+    item.bundle?.selections,
+  );
 
 /** The options that tell two lines of one product apart (empty for flat fixtures). */
 export const lineOptions = (item: CartLineItem) =>
@@ -57,6 +80,10 @@ export function getLineItemUnitPrice(
   item: CartLineItem,
   taxBehavior: TaxBehavior,
 ): bigint {
+  if (item.bundle) {
+    return bundleUnitPrice(item.bundle, taxBehavior);
+  }
+
   const price = displayPrice(item.productVariant, taxBehavior);
   const unit = BigInt(price ?? item.productVariant.price);
 

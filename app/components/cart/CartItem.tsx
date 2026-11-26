@@ -3,6 +3,7 @@ import { Link, useFetcher } from "react-router";
 import { Minus, Plus, Trash2 } from "lucide-react";
 import { YnsMedia } from "~/components/YnsMedia";
 import {
+  bundleLabel,
   getLineItemUnitPrice,
   itemKey,
   lineOptions,
@@ -23,6 +24,7 @@ export function CartItem({ item }: { item: CartLineItem }) {
   const { product } = productVariant;
   const options = lineOptions(item);
   const planName = item.subscriptionPlan && planLabel(item.subscriptionPlan);
+  const bundleName = item.bundle && bundleLabel(item.bundle);
   const image = productVariant.images[0] ?? product.images[0];
   const lineTotal = getLineItemUnitPrice(item, taxBehavior) * BigInt(quantity);
 
@@ -48,9 +50,25 @@ export function CartItem({ item }: { item: CartLineItem }) {
   const submit = (fields: Record<string, string>, optimistic: CartAction) => {
     dispatch(optimistic);
 
-    const allFields = item.subscriptionPlanId
-      ? { ...fields, subscriptionPlanId: item.subscriptionPlanId }
-      : fields;
+    const allFields = {
+      ...fields,
+      ...(item.subscriptionPlanId
+        ? { subscriptionPlanId: item.subscriptionPlanId }
+        : {}),
+      ...(item.bundle?.selections.length
+        ? {
+            selections: JSON.stringify(
+              item.bundle.selections.map(
+                ({ groupId, variantId, quantity }) => ({
+                  groupId,
+                  variantId,
+                  quantity,
+                }),
+              ),
+            ),
+          }
+        : {}),
+    };
     const form = new FormData();
     for (const [key, value] of Object.entries(allFields)) {
       form.append(key, value);
@@ -125,6 +143,9 @@ export function CartItem({ item }: { item: CartLineItem }) {
             )}
             {planName && (
               <p className="text-xs text-muted-foreground">{planName}</p>
+            )}
+            {bundleName && (
+              <p className="text-xs text-muted-foreground">{bundleName}</p>
             )}
           </div>
           <button

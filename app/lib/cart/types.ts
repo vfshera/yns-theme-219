@@ -1,5 +1,6 @@
 /** Types for the cookie-identified mock cart. Mirrors the Store API cart shape. */
 
+import type { BundleLine } from "~/lib/bundles/types";
 import type { VariantCombination } from "~/lib/variants/types";
 
 export type Coupon = {
@@ -33,6 +34,8 @@ export type CartLineItem = {
   /** The plan this line renews on; absent or null for a one-time purchase. */
   subscriptionPlanId?: string | null;
   subscriptionPlan?: SubscriptionPlanLabel | null;
+  /** Set for a bundle line; bundles and subscription plans are mutually exclusive. */
+  bundle?: BundleLine | null;
   productVariant: CartVariant;
 };
 

@@ -1,5 +1,10 @@
 import type { Route } from "./+types/cart";
 import {
+  bundleItemResolver,
+  parseSelections,
+  validateSelections,
+} from "~/lib/bundles/selections";
+import {
   getCartCookie,
   serializeCartCookie,
 } from "~/lib/cart/cart-cookie.server";
@@ -7,11 +12,16 @@ import {
   applyCoupon,
   createCart,
   getCart,
+  makeBundleLine,
   removeCoupon,
   removeLine,
   upsertLine,
 } from "~/lib/mock-store/cart.server";
-import { getProductByVariantId } from "~/lib/mock-store/catalog.server";
+import {
+  getBundleById,
+  getProductByVariantId,
+} from "~/lib/mock-store/catalog.server";
+import type { BundleLine, BundleSelection } from "~/lib/bundles/types";
 import type { CartResponse } from "~/lib/cart/types";
 
 const reply = (body: CartResponse, setCookie?: string) =>
@@ -64,6 +74,42 @@ const planError = (variantId: string, planId: string | null): string | null => {
   return null;
 };
 
+/** Reads the JSON selections field for bundle line mutations, with the same backstop as adds. */
+const bundleFromField = (
+  variantId: string,
+  raw: string | null,
+):
+  | { error: string }
+  | { line: BundleLine; selections: BundleSelection[] }
+  | null => {
+  if (!raw) {
+    return null;
+  }
+
+  const product = getProductByVariantId(variantId);
+  if (!product?.bundle) {
+    return { error: "Bundle not found" };
+  }
+
+  const selections = parseSelections(raw);
+  if (!selections) {
+    return { error: "Invalid bundle selection" };
+  }
+
+  const error = validateSelections(
+    product.bundle,
+    selections,
+    bundleItemResolver(product.bundle),
+  );
+  if (error) {
+    return { error };
+  }
+
+  const line = makeBundleLine(product, selections);
+
+  return line ? { line, selections } : { error: "Invalid bundle selection" };
+};
+
 export async function loader({ request }: Route.LoaderArgs) {
   const id = await getCartCookie(request);
 
@@ -107,6 +153,52 @@ export async function action({ request }: Route.ActionArgs) {
       return cart ? reply({ cart }, setCookie) : invalid("Product not found");
     }
 
+    case "add-bundle": {
+      const bundleId = field(form, "bundleId");
+      const selections = parseSelections(field(form, "selections"));
+      const quantity = quantityFrom(form, 1);
+
+      if (!bundleId || !selections || quantity === null || quantity < 1) {
+        return invalid("Invalid bundle selection");
+      }
+
+      const product = getBundleById(bundleId);
+      if (!product?.bundle) {
+        return invalid("Bundle not found");
+      }
+
+      const error = validateSelections(
+        product.bundle,
+        selections,
+        bundleItemResolver(product.bundle),
+      );
+      if (error) {
+        return invalid(error);
+      }
+
+      const variantId = product.variants[0]?.id;
+      const bundle = makeBundleLine(product, selections);
+      if (!variantId || !bundle) {
+        return invalid("Invalid bundle selection");
+      }
+
+      const existing = getCart(id);
+      let cartId: string;
+      let setCookie: string | undefined;
+
+      if (existing) {
+        cartId = existing.id;
+      } else {
+        const created = createCart();
+        cartId = created.id;
+        setCookie = await serializeCartCookie(cartId);
+      }
+
+      const cart = upsertLine({ id: cartId, variantId, quantity, bundle });
+
+      return cart ? reply({ cart }, setCookie) : invalid("Bundle not found");
+    }
+
     case "set-quantity":
     case "remove": {
       if (!id || !getCart(id)) {
@@ -119,13 +211,23 @@ export async function action({ request }: Route.ActionArgs) {
         return invalid("Invalid product");
       }
 
-      const error = planError(variantId, planId);
-      if (error) {
-        return invalid(error);
+      const bundleInfo = bundleFromField(variantId, field(form, "selections"));
+      if (bundleInfo && "error" in bundleInfo) {
+        return invalid(bundleInfo.error);
+      }
+
+      const bundleLine = bundleInfo?.line ?? null;
+      if (!bundleLine) {
+        const error = planError(variantId, planId);
+        if (error) {
+          return invalid(error);
+        }
       }
 
       if (intent === "remove") {
-        return reply({ cart: removeLine(id, variantId, planId) });
+        return reply({
+          cart: removeLine(id, variantId, planId, bundleInfo?.selections),
+        });
       }
 
       const quantity = quantityFrom(form, null);
@@ -134,7 +236,14 @@ export async function action({ request }: Route.ActionArgs) {
       }
 
       return reply({
-        cart: upsertLine({ id, variantId, quantity, mode: "set", planId }),
+        cart: upsertLine({
+          id,
+          variantId,
+          quantity,
+          mode: "set",
+          planId,
+          bundle: bundleLine,
+        }),
       });
     }
 

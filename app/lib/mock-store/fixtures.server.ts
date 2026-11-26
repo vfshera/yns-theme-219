@@ -11,6 +11,7 @@ import type {
   SubscriptionPlan,
 } from "./types";
 import type { JSONContent } from "@tiptap/core";
+import type { Bundle, BundleGroup, BundleItem } from "~/lib/bundles/types";
 import type { VariantCombination } from "~/lib/variants/types";
 
 const PHOTOS = [
@@ -98,6 +99,12 @@ const makeProduct = (
   category: CATEGORIES.find((category) => category.id === categoryId) ?? null,
   subscriptionMode: "optional",
   subscriptionPlanProducts: [],
+  bundlePriceMode: "percent",
+  bundleFixedPriceAmount: null,
+  bundleFixedPriceAmountGross: null,
+  bundleAmountOffAmount: null,
+  bundleAmountOffAmountGross: null,
+  bundleDiscountPercentage: null,
   variants: variants ?? [
     {
       id: `v-${id}`,
@@ -286,6 +293,171 @@ const PRODUCTS = [
     PHOTOS[1],
     "cat-accessories",
   ),
+] satisfies Product[];
+
+/** Bundle items resolve from the ordinary products so prices, stock and options stay in sync. */
+const bundleItem = (
+  variantId: string,
+  config: Pick<BundleItem, "position" | "label"> &
+    Partial<
+      Pick<
+        BundleItem,
+        "forced" | "defaultSelected" | "fixedQuantity" | "maxQuantity"
+      >
+    >,
+): BundleItem => {
+  const match = PRODUCTS.flatMap((product) =>
+    product.variants.map((variant) => ({ product, variant })),
+  ).find(({ variant }) => variant.id === variantId);
+
+  if (!match) {
+    throw new Error(`Unknown bundle variant: ${variantId}`);
+  }
+
+  const { product, variant } = match;
+
+  return {
+    variantId,
+    position: config.position,
+    label: config.label,
+    forced: config.forced ?? false,
+    defaultSelected: config.defaultSelected ?? false,
+    fixedQuantity: config.fixedQuantity ?? 1,
+    maxQuantity: config.maxQuantity ?? null,
+    price: variant.price,
+    priceGross: variant.priceGross,
+    stock: variant.stock,
+    images: variant.images.length ? variant.images : product.images,
+    options: variant.combinations.map(({ variantValue }) => ({
+      type: variantValue.variantType.label,
+      value: variantValue.value,
+      colorValue: variantValue.colorValue,
+    })),
+    productSlug: product.slug,
+  };
+};
+
+const bundleGroup = (
+  id: string,
+  name: string,
+  position: number,
+  minQuantity: number,
+  maxQuantity: number | null,
+  allowDuplicates: boolean,
+  items: BundleItem[],
+): BundleGroup => ({
+  id,
+  name,
+  position,
+  minQuantity,
+  maxQuantity,
+  allowDuplicates,
+  items,
+});
+
+/** Percent-priced bundle: forced print, pick-one stationery, up to two bags. */
+const DESK_BUNDLE: Bundle = {
+  discountPercentage: 15,
+  groups: [
+    bundleGroup("grp-desk-print", "Included", 0, 1, 1, false, [
+      bundleItem("v-still-life-print", {
+        position: 0,
+        label: "Still Life Print",
+        forced: true,
+        fixedQuantity: 1,
+      }),
+    ]),
+    bundleGroup("grp-desk-paper", "Choose your stationery", 1, 1, 1, false, [
+      bundleItem("v-pastel-stationery-set", {
+        position: 0,
+        label: "Blush / A5",
+        defaultSelected: true,
+      }),
+      bundleItem("v-pastel-stationery-set-sage-a5", {
+        position: 1,
+        label: "Sage / A5",
+      }),
+    ]),
+    bundleGroup("grp-desk-bag", "Add a bag", 2, 0, 2, true, [
+      bundleItem("v-canvas-tote-bag", {
+        position: 0,
+        label: "Canvas Tote Bag · Natural",
+      }),
+      bundleItem("v-canvas-tote-bag-rose", {
+        position: 1,
+        label: "Canvas Tote Bag · Rose",
+      }),
+      bundleItem("v-weekend-bag", { position: 2, label: "Weekend Bag" }),
+    ]),
+  ],
+};
+
+/** Fixed-priced bundle: the price stays $89.00 as picks change. */
+const WEEKEND_BUNDLE: Bundle = {
+  discountPercentage: null,
+  groups: [
+    bundleGroup("grp-weekend-print", "Included", 0, 1, 1, false, [
+      bundleItem("v-still-life-print", {
+        position: 0,
+        label: "Still Life Print",
+        forced: true,
+        fixedQuantity: 1,
+      }),
+    ]),
+    bundleGroup("grp-weekend-bag", "Choose your bag", 1, 1, 1, false, [
+      bundleItem("v-weekend-bag", {
+        position: 0,
+        label: "Weekend Bag",
+        defaultSelected: true,
+      }),
+      bundleItem("v-canvas-tote-bag", {
+        position: 1,
+        label: "Canvas Tote Bag · Natural",
+      }),
+    ]),
+    bundleGroup("grp-weekend-extra", "Add an extra", 2, 0, 1, false, [
+      bundleItem("v-yellow-sunglasses", {
+        position: 0,
+        label: "Yellow Sunglasses",
+      }),
+      bundleItem("v-linen-shirt", { position: 1, label: "Linen Shirt" }),
+    ]),
+  ],
+};
+
+const deskEditBundle: Product = {
+  ...makeProduct(
+    "desk-edit-bundle",
+    "Desk Edit Bundle",
+    "5015",
+    PHOTOS[4],
+    "cat-stationery",
+  ),
+  type: "bundle",
+  bundle: DESK_BUNDLE,
+  bundlePriceMode: "percent",
+  bundleDiscountPercentage: 15,
+};
+
+const weekendEscapeBundle: Product = {
+  ...makeProduct(
+    "weekend-escape-bundle",
+    "Weekend Escape Bundle",
+    "8900",
+    PHOTOS[1],
+    "cat-accessories",
+  ),
+  type: "bundle",
+  bundle: WEEKEND_BUNDLE,
+  bundlePriceMode: "fixed",
+  bundleFixedPriceAmount: "8900",
+  bundleFixedPriceAmountGross: "8900",
+};
+
+const ALL_PRODUCTS = [
+  ...PRODUCTS,
+  deskEditBundle,
+  weekendEscapeBundle,
 ] satisfies Product[];
 
 const COLLECTIONS = [
@@ -596,7 +768,7 @@ export const fixtures = {
   collections: COLLECTIONS,
   legalPages: LEGAL_PAGES,
   posts: POSTS,
-  products: PRODUCTS,
+  products: ALL_PRODUCTS,
   socials: SOCIALS,
   me: (origin: string): MeResponse => ({
     store: STORE,

@@ -1,4 +1,5 @@
 import type { JSONContent } from "@tiptap/core";
+import type { Bundle, BundlePricingMode } from "~/lib/bundles/types";
 import type { VariantCombination } from "~/lib/variants/types";
 
 /** Minimal contracts for the Store API shapes this app actually uses. */
@@ -44,7 +45,7 @@ export type Product = {
   id: string;
   name: string;
   slug: string;
-  type: "product";
+  type: "product" | "bundle";
   status: "published";
   images: string[];
   summary: string | null;
@@ -53,6 +54,15 @@ export type Product = {
   subscriptionMode: "optional" | "only" | "rolling";
   subscriptionPlanProducts: { subscriptionPlan: SubscriptionPlan }[];
   variants: ProductVariant[];
+  /** Present only when `type === "bundle"`; the options offered inside it. */
+  bundle?: Bundle;
+  /** Raw bundle pricing fields, mirroring the Store API contract. */
+  bundlePriceMode: BundlePricingMode;
+  bundleFixedPriceAmount: string | null;
+  bundleFixedPriceAmountGross: string | null;
+  bundleAmountOffAmount: string | null;
+  bundleAmountOffAmountGross: string | null;
+  bundleDiscountPercentage: number | null;
 };
 
 export type Collection = {

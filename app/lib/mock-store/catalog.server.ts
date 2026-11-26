@@ -361,6 +361,16 @@ export function getProductByVariantId(variantId: string): Product | null {
   );
 }
 
+/** A bundle product by id, used by the cart action as its validation backstop. */
+export function getBundleById(id: string): Product | null {
+  const { data } = queryStore("products", ALL_ITEMS) as ApiList<Product>;
+
+  return (
+    data.find((product) => product.type === "bundle" && product.id === id) ??
+    null
+  );
+}
+
 /** Legal pages shown in the footer Help column, in the order the source Store API returns them. */
 export function getLegalLinks(): ShopLink[] {
   const { data } = queryStore("legal-pages", ALL_ITEMS) as ApiList<LegalPage>;

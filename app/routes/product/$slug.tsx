@@ -9,6 +9,12 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "~/components/ui/breadcrumb";
+import { bundlePricing, bundleUnitPrice } from "~/lib/bundles/pricing";
+import {
+  bundleItemResolver,
+  defaultSelections,
+  resolveBundleSelections,
+} from "~/lib/bundles/selections";
 import { sortVariantsByOptions } from "~/lib/variants/order";
 import { resolveSelectedVariant } from "~/lib/variants/selected";
 import {
@@ -16,6 +22,7 @@ import {
   getRelatedProducts,
 } from "~/lib/mock-store/catalog.server";
 import { getStoreConfig } from "~/lib/mock-store/config.server";
+import { BundleBuilder } from "./+/BundleBuilder";
 import { ProductGallery } from "./+/ProductGallery";
 import { PurchasePanel } from "./+/PurchasePanel";
 import { RelatedProducts } from "./+/RelatedProducts";
@@ -31,6 +38,8 @@ export function loader({ params }: Route.LoaderArgs) {
   return {
     product,
     variants: sortVariantsByOptions(product.variants),
+    bundle: product.bundle ?? null,
+    pricing: bundlePricing(product),
     plans: product.subscriptionPlanProducts
       .map(({ subscriptionPlan }) => subscriptionPlan)
       .filter((plan) => plan.active)
@@ -64,6 +73,27 @@ export const meta: Route.MetaFunction = ({ loaderData, matches, location }) => {
     loaderData?.variants ?? [],
     new URLSearchParams(location.search),
   );
+  const bundle = loaderData?.bundle;
+  const bundleSelections = bundle
+    ? resolveBundleSelections(
+        defaultSelections(bundle),
+        bundleItemResolver(bundle),
+      )
+    : null;
+  const bundlePrice =
+    bundle && loaderData && bundleSelections
+      ? bundleUnitPrice(
+          {
+            id: product?.id ?? "",
+            name: product?.name ?? "",
+            pricing: loaderData.pricing,
+            discountPercentage: bundle.discountPercentage,
+            selections: bundleSelections,
+          },
+          "inclusive",
+        )
+      : null;
+  const offerPrice = bundlePrice ?? (variant ? BigInt(variant.price) : null);
 
   return [
     { title },
@@ -95,7 +125,10 @@ export const meta: Route.MetaFunction = ({ loaderData, matches, location }) => {
                 ? {
                     offers: {
                       "@type": "Offer",
-                      price: (Number(variant.price) / 100).toFixed(2),
+                      price:
+                        offerPrice !== null
+                          ? (Number(offerPrice) / 100).toFixed(2)
+                          : "0.00",
                       priceCurrency: loaderData?.config.currency ?? "USD",
                       availability:
                         variant.stock > 0
@@ -167,7 +200,8 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
 }
 
 export default function Product({ loaderData }: Route.ComponentProps) {
-  const { product, variants, plans, config, related } = loaderData;
+  const { product, variants, bundle, pricing, plans, config, related } =
+    loaderData;
   const { selectedVariant, selectedOptions } = useSelectedVariant(variants);
   const galleryImages = selectedVariant?.images.length
     ? selectedVariant.images
@@ -214,20 +248,28 @@ export default function Product({ loaderData }: Route.ComponentProps) {
           <h1 className="mb-3.5 text-2xl font-bold text-balance">
             {product.name}
           </h1>
-          <PurchasePanel
-            product={{
-              id: product.id,
-              name: product.name,
-              slug: product.slug,
-              images: product.images,
-            }}
-            variants={variants}
-            selectedVariant={selectedVariant}
-            selectedOptions={selectedOptions}
-            plans={plans}
-            subscriptionMode={product.subscriptionMode}
-          />
-          {/* Deferred: subscriptions and bundles. */}
+          {bundle && product.type === "bundle" ? (
+            <BundleBuilder
+              bundleId={product.id}
+              productName={product.name}
+              bundle={bundle}
+              pricing={pricing}
+            />
+          ) : (
+            <PurchasePanel
+              product={{
+                id: product.id,
+                name: product.name,
+                slug: product.slug,
+                images: product.images,
+              }}
+              variants={variants}
+              selectedVariant={selectedVariant}
+              selectedOptions={selectedOptions}
+              plans={plans}
+              subscriptionMode={product.subscriptionMode}
+            />
+          )}
 
           {(product.summary || product.content) && (
             <details open className="group mt-6 border-b border-border">
