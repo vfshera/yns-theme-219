@@ -1,4 +1,5 @@
 import { ProductCard, type CardConfig } from "~/components/ProductCard";
+import type { VariantCombination } from "~/lib/variants/types";
 
 type EmbedProduct = {
   id: string;
@@ -6,11 +7,14 @@ type EmbedProduct = {
   slug: string;
   images: string[];
   category: { name: string } | null;
+  subscriptionMode?: "optional" | "only" | "rolling";
   variants: {
     id: string;
     price: string;
     priceGross?: string | null;
+    stock: number | null;
     images: string[];
+    combinations: VariantCombination[];
   }[];
 };
 
