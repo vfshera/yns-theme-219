@@ -1,20 +1,34 @@
-import { useId } from "react";
-import { Form } from "react-router";
-import { ArrowRight, Mail } from "lucide-react";
+import { useId, useState } from "react";
+import { useFetcher } from "react-router";
+import { ArrowRight, Check, Loader2, Mail } from "lucide-react";
+import { NewsletterConsent } from "~/components/NewsletterConsent";
 
-/** The original's outlined footer signup field. The newsletter action is deferred. */
+type NewsletterResponse = {
+  success: boolean;
+  message: string;
+  email?: string;
+  error?: string;
+};
+
+/** The outlined footer signup, now wired to the stub-backed /newsletter action. */
 export function FooterNewsletter() {
   const inputId = useId();
+  const [consent, setConsent] = useState(false);
+  const fetcher = useFetcher<NewsletterResponse>();
+  const data = fetcher.data;
+  const pending = fetcher.state !== "idle";
+
+  if (data?.success) {
+    return (
+      <p className="mb-8 flex items-center gap-2 text-primary">
+        <Check aria-hidden="true" className="size-4" />
+        {data.message}
+      </p>
+    );
+  }
 
   return (
-    <Form
-      method="post"
-      className="mb-8 space-y-3"
-      onSubmit={(event) => {
-        // No action is wired up yet; keep the field inert until the newsletter route lands.
-        event.preventDefault();
-      }}
-    >
+    <fetcher.Form method="post" action="/newsletter" className="mb-8 space-y-3">
       <div className="relative">
         <label htmlFor={inputId} className="sr-only">
           Email address
@@ -35,11 +49,30 @@ export function FooterNewsletter() {
         <button
           type="submit"
           aria-label="Subscribe"
-          className="absolute right-1 top-1/2 flex size-10 -translate-y-1/2 items-center justify-center rounded-md text-primary transition-colors hover:bg-secondary-foreground/10"
+          disabled={!consent || pending}
+          className="absolute right-1 top-1/2 flex size-10 -translate-y-1/2 items-center justify-center rounded-md text-primary transition-colors hover:bg-secondary-foreground/10 disabled:cursor-not-allowed disabled:opacity-50"
         >
-          <ArrowRight className="size-6" strokeWidth={1.5} aria-hidden="true" />
+          {pending ? (
+            <Loader2 aria-hidden="true" className="size-5 animate-spin" />
+          ) : (
+            <ArrowRight
+              className="size-6"
+              strokeWidth={1.5}
+              aria-hidden="true"
+            />
+          )}
         </button>
       </div>
-    </Form>
+      <NewsletterConsent
+        checked={consent}
+        onCheckedChange={setConsent}
+        className="text-primary"
+      />
+      {data?.error && (
+        <p className="text-sm text-destructive" role="alert">
+          {data.error}
+        </p>
+      )}
+    </fetcher.Form>
   );
 }

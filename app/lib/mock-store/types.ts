@@ -110,6 +110,15 @@ export type LegalPage = {
   updatedAt: string;
 };
 
+export type NewsletterPopupSettings = {
+  delaySeconds?: number;
+  heading?: string;
+  subheading?: string;
+  ctaText?: string;
+  teaserText?: string;
+  discountCode?: string;
+};
+
 export type Store = {
   name: string;
   currency: string;
@@ -119,7 +128,13 @@ export type Store = {
   settings: {
     storeDescription: string;
     freeShippingThreshold: string;
-    enabledTools: { blog: boolean; contactForm: boolean };
+    enabledTools: {
+      blog: boolean;
+      contactForm: boolean;
+      newsletter: boolean;
+      newsletterPopup: boolean;
+    };
+    newsletterPopup?: NewsletterPopupSettings | null;
     defaultLanguage: string | null;
     enabledLanguages: Record<string, string>;
   };

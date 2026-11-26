@@ -789,7 +789,21 @@ const STORE = {
     freeShippingThreshold: "5000",
     // Store feature flags: turning `blog` or `contactForm` off gates their routes
     // To a 404 (and hides their footer links) exactly as in the source theme.
-    enabledTools: { blog: true, contactForm: true },
+    enabledTools: {
+      blog: true,
+      contactForm: true,
+      newsletter: true,
+      newsletterPopup: true,
+    },
+    newsletterPopup: {
+      delaySeconds: 30,
+      heading: "Unlock 20% Off",
+      subheading:
+        "Subscribe to our newsletter and get an exclusive discount on your first order.",
+      ctaText: "Get My Discount",
+      teaserText: "Unlock 20% Off",
+      discountCode: "WELCOME10",
+    },
     defaultLanguage: null,
     enabledLanguages: {},
   },

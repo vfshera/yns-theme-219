@@ -70,6 +70,9 @@ export function getStoreInfo() {
       : null,
     blog: tools.blog ?? false,
     contact: tools.contactForm ?? false,
+    newsletter: tools.newsletter ?? false,
+    newsletterPopup: tools.newsletterPopup ?? false,
+    newsletterPopupSettings: store.settings.newsletterPopup ?? null,
     socialLinks,
   };
 }

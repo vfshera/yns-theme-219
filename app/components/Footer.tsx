@@ -50,6 +50,7 @@ export function Footer({
     storeName: string;
     blog: boolean;
     contact: boolean;
+    newsletter: boolean;
     socialLinks: { label: string; href: string }[];
   };
   shop: { label: string; links: NavLink[] };
@@ -79,7 +80,7 @@ export function Footer({
             Stay up to date with everything new at {info.storeName}, from fresh
             arrivals to the occasional offer.
           </p>
-          <FooterNewsletter />
+          {info.newsletter && <FooterNewsletter />}
           {info.socialLinks.length > 0 && (
             <FooterColumn title="Follow us" className="mb-10">
               <ul className="flex flex-wrap items-center gap-3">
