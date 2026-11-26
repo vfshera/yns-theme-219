@@ -237,13 +237,28 @@ const toteBag = makeProduct(
   "cat-accessories",
   TOTE_VARIANTS,
 );
-const linenShirt = makeProduct(
-  "linen-shirt",
-  "Linen Shirt",
-  "4900",
-  PHOTOS[2],
-  "cat-accessories",
-);
+const linenShirt: Product = {
+  ...makeProduct(
+    "linen-shirt",
+    "Linen Shirt",
+    "4900",
+    PHOTOS[2],
+    "cat-accessories",
+  ),
+  // The one fixture on sale: $55.00 list against a $49.00 selling price.
+  variants: [
+    {
+      id: "v-linen-shirt",
+      price: "4900",
+      priceGross: "4900",
+      originalPrice: "5500",
+      originalPriceGross: "5500",
+      stock: 10,
+      images: [],
+      combinations: [],
+    },
+  ],
+};
 const sunglasses = makeProduct(
   "yellow-sunglasses",
   "Yellow Sunglasses",

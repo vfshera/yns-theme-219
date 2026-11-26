@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { AddToCartButton, useCartConfig } from "~/components/cart";
 import { formatListingPrice } from "~/lib/format-money";
+import { PriceDisplay } from "./PriceDisplay";
 import { QuantitySelector } from "./QuantitySelector";
 import { SubscriptionOptions } from "./SubscriptionOptions";
 import { VariantSelector } from "./VariantSelector";
@@ -75,7 +76,11 @@ export function PurchasePanel({
         />
       )}
       <div className="flex flex-col gap-3">
-        {price && <span className="text-lg font-semibold">{price}</span>}
+        {selectedVariant ? (
+          <PriceDisplay variant={selectedVariant} config={config} />
+        ) : (
+          price && <span className="text-lg font-semibold">{price}</span>
+        )}
         <div className="flex flex-wrap items-center gap-4">
           <QuantitySelector
             quantity={quantity}

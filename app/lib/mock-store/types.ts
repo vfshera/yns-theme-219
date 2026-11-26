@@ -18,6 +18,9 @@ export type ProductVariant = {
   id: string;
   price: string;
   priceGross: string;
+  /** Compare-at price; rendered as a struck price only when it exceeds `price`. */
+  originalPrice?: string | null;
+  originalPriceGross?: string | null;
   stock: number;
   images: string[];
   combinations: VariantCombination[];
