@@ -10,7 +10,7 @@ type Variant = {
   id: string;
   price: string;
   priceGross: string;
-  stock: number;
+  stock: number | null;
   images: string[];
   combinations: VariantCombination[];
 };
@@ -34,7 +34,8 @@ export function AddToCartButton({
   const { dispatch, syncCart, reconcile, mutate, openCart } = useCart();
   const fetcher = useFetcher<CartResponse>();
   const synced = useRef<CartResponse | null>(null);
-  const soldOut = (variant?.stock ?? 0) <= 0;
+  const soldOut =
+    variant !== undefined && variant.stock !== null && variant.stock <= 0;
 
   useEffect(() => {
     if (!fetcher.data || synced.current === fetcher.data) {
@@ -66,7 +67,7 @@ export function AddToCartButton({
       disabled ||
       soldOut ||
       quantity < 1 ||
-      quantity > variant.stock
+      (variant.stock !== null && quantity > variant.stock)
     ) {
       return;
     }

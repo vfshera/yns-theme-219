@@ -122,7 +122,7 @@ export function validateSelections(
     }
 
     const source = resolveVariant(selection.variantId);
-    if (!source || source.stock <= 0) {
+    if (!source || (source.stock !== null && source.stock <= 0)) {
       return "This item is out of stock";
     }
 
@@ -134,7 +134,7 @@ export function validateSelections(
       return `Only ${item.maxQuantity} of ${item.label} available`;
     }
 
-    if (selection.quantity > source.stock) {
+    if (source.stock !== null && selection.quantity > source.stock) {
       return `Not enough stock for ${item.label}`;
     }
   }

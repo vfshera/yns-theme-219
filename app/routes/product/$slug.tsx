@@ -131,7 +131,7 @@ export const meta: Route.MetaFunction = ({ loaderData, matches, location }) => {
                           : "0.00",
                       priceCurrency: loaderData?.config.currency ?? "USD",
                       availability:
-                        variant.stock > 0
+                        variant.stock === null || variant.stock > 0
                           ? "https://schema.org/InStock"
                           : "https://schema.org/OutOfStock",
                       url,

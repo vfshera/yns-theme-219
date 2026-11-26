@@ -13,7 +13,7 @@ export type PurchaseVariant = Omit<VariantWithOptions, "combinations"> & {
   combinations: VariantCombination[];
   price: string;
   priceGross: string;
-  stock: number;
+  stock: number | null;
   images: string[];
 };
 
@@ -58,7 +58,8 @@ export function PurchasePanel({
   // A rolling box changes contents every cycle and is not sold through this panel.
   const purchasable =
     allowOneTime || (subscriptionMode === "only" && plan !== null);
-  const soldOut = (selectedVariant?.stock ?? 0) <= 0;
+  const soldOut =
+    selectedVariant?.stock !== null && (selectedVariant?.stock ?? 0) <= 0;
 
   return (
     <div className="flex flex-col gap-6">

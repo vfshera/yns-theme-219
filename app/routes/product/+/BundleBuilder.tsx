@@ -162,7 +162,7 @@ export function BundleBuilder({
                   .map((item) => {
                     const quantity = quantityOf(group.id, item.variantId);
                     const selected = quantity > 0;
-                    const outOfStock = item.stock <= 0;
+                    const outOfStock = item.stock !== null && item.stock <= 0;
                     const itemCap =
                       item.maxQuantity ??
                       (group.allowDuplicates ? Number.POSITIVE_INFINITY : 1);
@@ -170,7 +170,7 @@ export function BundleBuilder({
                       !item.forced &&
                       !outOfStock &&
                       quantity < itemCap &&
-                      quantity < item.stock &&
+                      (item.stock === null || quantity < item.stock) &&
                       !atGroupMax;
                     const swatchColor =
                       item.options.find(

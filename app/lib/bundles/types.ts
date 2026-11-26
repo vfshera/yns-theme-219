@@ -19,7 +19,8 @@ export type BundleItem = {
   label: string;
   price: string;
   priceGross: string;
-  stock: number;
+  /** Null means unlimited stock; 0 means sold out. */
+  stock: number | null;
   images: string[];
   options: BundleVariantOption[];
   productSlug: string;

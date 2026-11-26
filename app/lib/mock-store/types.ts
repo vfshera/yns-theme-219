@@ -21,7 +21,8 @@ export type ProductVariant = {
   /** Compare-at price; rendered as a struck price only when it exceeds `price`. */
   originalPrice?: string | null;
   originalPriceGross?: string | null;
-  stock: number;
+  /** Null means unlimited stock; 0 means sold out. */
+  stock: number | null;
   images: string[];
   combinations: VariantCombination[];
 };

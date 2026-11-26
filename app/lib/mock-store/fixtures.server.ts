@@ -273,13 +273,20 @@ const stillLifePrint = makeProduct(
   PHOTOS[4],
   "cat-home",
 );
-const roomAccent = makeProduct(
-  "room-accent",
-  "Room Accent",
-  "5800",
-  PHOTOS[5],
-  "cat-home",
-);
+const roomAccent: Product = {
+  ...makeProduct("room-accent", "Room Accent", "5800", PHOTOS[5], "cat-home"),
+  // The unlimited-stock fixture: null is never sold out and never quantity-capped.
+  variants: [
+    {
+      id: "v-room-accent",
+      price: "5800",
+      priceGross: "5800",
+      stock: null,
+      images: [],
+      combinations: [],
+    },
+  ],
+};
 
 const notePad: Product = {
   ...makeProduct(
