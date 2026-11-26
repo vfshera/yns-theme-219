@@ -203,9 +203,11 @@ export default function Product({ loaderData }: Route.ComponentProps) {
   const { product, variants, bundle, pricing, plans, config, related } =
     loaderData;
   const { selectedVariant, selectedOptions } = useSelectedVariant(variants);
-  const galleryImages = selectedVariant?.images.length
-    ? selectedVariant.images
-    : product.images;
+  // Full media list: product photos first, then distinct variant photos; the gallery keeps them all.
+  const galleryImages = [
+    ...product.images,
+    ...variants.flatMap((v) => v.images),
+  ].filter((image, index, all) => all.indexOf(image) === index);
   const category = product.category;
   const categoryName = category
     ? category.name.split(">").at(-1)?.trim() || category.name
@@ -232,7 +234,12 @@ export default function Product({ loaderData }: Route.ComponentProps) {
       </Breadcrumb>
 
       <div className="mb-20 flex flex-col gap-8 lg:mb-24 lg:flex-row lg:items-start lg:gap-12">
-        <ProductGallery images={galleryImages} productName={product.name} />
+        <ProductGallery
+          images={galleryImages}
+          productName={product.name}
+          selectedVariantId={selectedVariant?.id ?? null}
+          selectedImage={selectedVariant?.images[0] ?? null}
+        />
 
         <div className="flex w-full flex-col lg:w-[420px] lg:shrink-0 xl:w-[500px]">
           {category && categoryName && (

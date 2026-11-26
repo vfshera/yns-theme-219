@@ -223,6 +223,8 @@ const stationerySet: Product = {
     "cat-stationery",
     STATIONERY_VARIANTS,
   ),
+  // Two product photos give the media gallery a thumbnail strip; variants add their own.
+  images: [PHOTOS[0], PHOTOS[4]],
   subscriptionPlanProducts: STATIONERY_PLANS.map((subscriptionPlan) => ({
     subscriptionPlan,
   })),
