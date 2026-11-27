@@ -1,4 +1,4 @@
-import type { Route } from "./+types/$slug";
+import type { Route } from "./+types/index";
 import { isRouteErrorResponse, Link } from "react-router";
 import { ChevronDown } from "lucide-react";
 import {
@@ -81,8 +81,11 @@ export const meta: Route.MetaFunction = ({ loaderData, matches, location }) => {
     (product?.summary ?? null) ||
     storeDescription ||
     "Considered things for everyday living, in soft colours and simple shapes.";
-  const image = product?.images[0];
-  const ogImage = image ? `${origin}${image}` : undefined;
+  const rawImage = product?.images[0];
+  const productPhoto = rawImage ? `${origin}${rawImage}` : undefined;
+  const ogImage = product
+    ? `${origin}/product/${encodeURIComponent(product.slug)}/og.png`
+    : undefined;
   const variant = resolveSelectedVariant(
     loaderData?.variants ?? [],
     new URLSearchParams(location.search),
@@ -118,7 +121,15 @@ export const meta: Route.MetaFunction = ({ loaderData, matches, location }) => {
     { property: "og:url", content: url },
     { property: "og:title", content: title },
     { property: "og:description", content: description },
-    ...(ogImage ? [{ property: "og:image", content: ogImage }] : []),
+    ...(ogImage
+      ? [
+          { property: "og:image", content: ogImage },
+          { property: "og:image:width", content: "1200" },
+          { property: "og:image:height", content: "630" },
+          { property: "og:image:type", content: "image/png" },
+          { property: "og:image:alt", content: title },
+        ]
+      : []),
     {
       name: "twitter:card",
       content: ogImage ? "summary_large_image" : "summary",
@@ -134,7 +145,7 @@ export const meta: Route.MetaFunction = ({ loaderData, matches, location }) => {
               "@type": "Product",
               name: product.name,
               description,
-              ...(ogImage ? { image: [ogImage] } : {}),
+              ...(productPhoto ? { image: [productPhoto] } : {}),
               ...((loaderData?.reviewSummary?.reviewCount ?? 0) > 0
                 ? {
                     aggregateRating: {
