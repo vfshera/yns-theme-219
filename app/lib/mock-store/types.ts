@@ -136,8 +136,15 @@ export type Store = {
       restockNotifications: boolean;
       cookieConsent: boolean;
       reviews: boolean;
+      storeChat: boolean;
     };
     newsletterPopup?: NewsletterPopupSettings | null;
+    /** Platform-owned assistant config; null when the subscription lapses. */
+    storeChat?: {
+      assistantName: string | null;
+      greeting: string | null;
+      suggestedQuestions: string[] | null;
+    } | null;
     defaultLanguage: string | null;
     enabledLanguages: Record<string, string>;
   };

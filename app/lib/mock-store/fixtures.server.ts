@@ -830,6 +830,15 @@ const STORE = {
       restockNotifications: true,
       cookieConsent: true,
       reviews: true,
+      storeChat: true,
+    },
+    storeChat: {
+      assistantName: "Lazora Assistant",
+      greeting: "Hi! I'm the Lazora assistant — what are you looking for?",
+      suggestedQuestions: [
+        "Do you offer free shipping?",
+        "How do returns work?",
+      ],
     },
     newsletterPopup: {
       delaySeconds: 30,

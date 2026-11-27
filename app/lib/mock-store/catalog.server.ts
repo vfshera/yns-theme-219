@@ -77,6 +77,14 @@ export function getStoreInfo() {
     restockNotifications: tools.restockNotifications ?? false,
     cookieConsent: tools.cookieConsent ?? false,
     reviews: tools.reviews ?? false,
+    storeChatEnabled: tools.storeChat ?? false,
+    chat: store.settings.storeChat
+      ? {
+          assistantName: store.settings.storeChat.assistantName,
+          greeting: store.settings.storeChat.greeting,
+          suggestedQuestions: store.settings.storeChat.suggestedQuestions ?? [],
+        }
+      : null,
     socialLinks,
   };
 }
