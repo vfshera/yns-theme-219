@@ -1,5 +1,6 @@
 import type { JSONContent } from "@tiptap/core";
 import type { Bundle, BundlePricingMode } from "~/lib/bundles/types";
+import type { CartLineItem } from "~/lib/cart/types";
 import type { VariantCombination } from "~/lib/variants/types";
 import type { VolumeTier } from "~/lib/volume-pricing";
 
@@ -162,6 +163,28 @@ export type ProductReviewsResponse = ApiList<ProductReview> & {
   summary: { averageRating: number; reviewCount: number };
 };
 
+/** Minimal plain order shape for the confirmation page; line items reuse the cart contract. */
+export type Order = {
+  id: string;
+  lookup: number;
+  createdAt: string;
+  customerEmail: string | null;
+  lineItems: CartLineItem[];
+  shippingAddress: {
+    name: string;
+    line1: string;
+    line2: string | null;
+    city: string;
+    state: string | null;
+    postalCode: string;
+    country: string;
+  } | null;
+  shipping: { name: string; price: string; priceGross: string } | null;
+  subtotal: number;
+  total: number;
+  tax: number;
+};
+
 export type MeResponse = {
   store: Store;
   storeBaseUrl: string;
@@ -180,4 +203,5 @@ export type StoreResponse =
   | ApiList<Collection>
   | ApiList<LegalPage>
   | ApiList<Post>
-  | ProductReviewsResponse;
+  | ProductReviewsResponse
+  | ApiList<Order>;

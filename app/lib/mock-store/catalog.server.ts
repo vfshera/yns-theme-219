@@ -446,6 +446,8 @@ export function getRelatedProducts(
 }
 
 /** Static mock reviews for a product, with the summary computed over the full set. */
+export { getOrderById } from "./orders.server";
+
 export function getProductReviews(
   productId: string,
   limit = 20,

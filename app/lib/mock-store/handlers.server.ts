@@ -1,4 +1,5 @@
 import { fixtures } from "./fixtures.server";
+import { listOrders } from "./orders.server";
 import type {
   ApiList,
   Post,
@@ -99,6 +100,7 @@ const handlers: Record<string, Handler> = {
   posts: (params) => list(browsePosts(params), params),
   socials: () => fixtures.socials,
   "legal-pages": (params) => list(fixtures.legalPages, params),
+  orders: (params) => list(listOrders(), params),
   brands: (params) => list([], params),
 };
 
