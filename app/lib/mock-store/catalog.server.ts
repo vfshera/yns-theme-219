@@ -73,6 +73,7 @@ export function getStoreInfo() {
     newsletter: tools.newsletter ?? false,
     newsletterPopup: tools.newsletterPopup ?? false,
     newsletterPopupSettings: store.settings.newsletterPopup ?? null,
+    restockNotifications: tools.restockNotifications ?? false,
     socialLinks,
   };
 }

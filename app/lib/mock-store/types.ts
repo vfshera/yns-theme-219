@@ -133,6 +133,7 @@ export type Store = {
       contactForm: boolean;
       newsletter: boolean;
       newsletterPopup: boolean;
+      restockNotifications: boolean;
     };
     newsletterPopup?: NewsletterPopupSettings | null;
     defaultLanguage: string | null;

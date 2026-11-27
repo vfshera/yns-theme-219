@@ -316,6 +316,17 @@ const notePad: Product = {
     PHOTOS[0],
     "cat-stationery",
   ),
+  // Sold-out fixture for restock notifications; not referenced by any bundle.
+  variants: [
+    {
+      id: "v-note-pad",
+      price: "1200",
+      priceGross: "1200",
+      stock: 0,
+      images: [],
+      combinations: [],
+    },
+  ],
   subscriptionMode: "only",
   subscriptionPlanProducts: NOTE_PAD_PLANS.map((subscriptionPlan) => ({
     subscriptionPlan,
@@ -794,6 +805,7 @@ const STORE = {
       contactForm: true,
       newsletter: true,
       newsletterPopup: true,
+      restockNotifications: true,
     },
     newsletterPopup: {
       delaySeconds: 30,

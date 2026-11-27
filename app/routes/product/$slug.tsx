@@ -20,12 +20,14 @@ import { resolveSelectedVariant } from "~/lib/variants/selected";
 import {
   getProductBySlug,
   getRelatedProducts,
+  getStoreInfo,
 } from "~/lib/mock-store/catalog.server";
 import { getStoreConfig } from "~/lib/mock-store/config.server";
 import { BundleBuilder } from "./+/BundleBuilder";
 import { ProductGallery } from "./+/ProductGallery";
 import { PurchasePanel } from "./+/PurchasePanel";
 import { RelatedProducts } from "./+/RelatedProducts";
+import { RestockNotify } from "./+/RestockNotify";
 import { useSelectedVariant } from "./+/use-selected-variant";
 
 export function loader({ params }: Route.LoaderArgs) {
@@ -52,6 +54,7 @@ export function loader({ params }: Route.LoaderArgs) {
         benefits,
       })),
     config: getStoreConfig(),
+    restockEnabled: getStoreInfo().restockNotifications,
     related: getRelatedProducts(product.id, product.category?.slug),
   };
 }
@@ -209,6 +212,7 @@ export default function Product({ loaderData }: Route.ComponentProps) {
     volumePricingTiers,
     plans,
     config,
+    restockEnabled,
     related,
   } = loaderData;
   const { selectedVariant, selectedOptions } = useSelectedVariant(variants);
@@ -270,6 +274,11 @@ export default function Product({ loaderData }: Route.ComponentProps) {
               productName={product.name}
               bundle={bundle}
               pricing={pricing}
+            />
+          ) : restockEnabled && selectedVariant?.stock === 0 ? (
+            <RestockNotify
+              variantId={selectedVariant.id}
+              productName={product.name}
             />
           ) : (
             <PurchasePanel
