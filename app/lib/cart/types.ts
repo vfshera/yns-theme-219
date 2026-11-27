@@ -62,4 +62,6 @@ export type CartAction =
 export type CartResponse = {
   cart: Cart | null;
   error?: string;
+  /** Set by the mock place-order intent so the client can navigate to the confirmation. */
+  orderId?: string;
 };

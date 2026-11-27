@@ -1,4 +1,7 @@
+import { useEffect, useRef } from "react";
+import { useFetcher, useNavigate } from "react-router";
 import { Loader2, ShoppingCart } from "lucide-react";
+import { toast } from "sonner";
 import { Button, buttonVariants } from "~/components/ui/button";
 import { ScrollArea } from "~/components/ui/scroll-area";
 import {
@@ -16,17 +19,45 @@ import { CartItem } from "./CartItem";
 import { useCart } from "./CartProvider";
 import { DiscountCodeField } from "./DiscountCodeField";
 import { useCartConfig } from "./use-cart-config";
+import type { CartResponse } from "~/lib/cart/types";
 
 export function CartSidebar() {
   const { currency, locale, language, taxBehavior } = useCartConfig();
-  const { cart, isOpen, closeCart, items, itemCount, subtotal, isMutating } =
-    useCart();
+  const navigate = useNavigate();
+  const {
+    cart,
+    isOpen,
+    closeCart,
+    items,
+    itemCount,
+    subtotal,
+    isMutating,
+    syncCart,
+  } = useCart();
+  const placeOrder = useFetcher<CartResponse>();
+  const placed = useRef<string | null>(null);
   const coupon = cart?.coupon;
   const beforeDiscount = cart
     ? getCartDisplaySubtotal({ ...cart, subtotal: null }, taxBehavior)
     : 0n;
   const discount =
     coupon && beforeDiscount > subtotal ? beforeDiscount - subtotal : null;
+
+  useEffect(() => {
+    const result = placeOrder.data;
+    if (!result || placed.current === (result.orderId ?? result.error)) {
+      return;
+    }
+
+    placed.current = result.orderId ?? result.error ?? null;
+    if (result.orderId) {
+      syncCart(null);
+      closeCart();
+      navigate(`/order/success/${result.orderId}`);
+    } else if (result.error) {
+      toast.error(result.error);
+    }
+  }, [placeOrder.data, syncCart, closeCart, navigate]);
 
   // /checkout is a proxied zone — keep this a plain <a>, never a soft <Link>.
   const checkoutUrl = language
@@ -110,6 +141,33 @@ export function CartSidebar() {
                     ? "Shipping calculated at checkout"
                     : "Shipping and taxes calculated at checkout"}
                 </p>
+
+                {/* Mock checkout: this button and the real-checkout anchor below are
+                    the seam a platform checkout replaces. */}
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={isMutating || placeOrder.state !== "idle"}
+                  onClick={() =>
+                    placeOrder.submit(
+                      { intent: "place-order" },
+                      { method: "post", action: "/cart" },
+                    )
+                  }
+                  className="h-11 w-full rounded-md text-sm font-medium"
+                >
+                  {placeOrder.state !== "idle" ? (
+                    <>
+                      <Loader2
+                        aria-hidden="true"
+                        className="size-4 animate-spin"
+                      />
+                      Placing order…
+                    </>
+                  ) : (
+                    "Place demo order"
+                  )}
+                </Button>
 
                 <a
                   href={checkoutUrl}

@@ -196,6 +196,11 @@ export function getCart(id: string | null): Cart | null {
   return (id && carts.get(id)) || null;
 }
 
+/** Forget a cart after a mock order is placed. */
+export function clearCart(id: string): void {
+  carts.delete(id);
+}
+
 export function upsertLine({
   id,
   variantId,

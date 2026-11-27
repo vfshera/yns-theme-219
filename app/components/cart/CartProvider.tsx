@@ -96,12 +96,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const syncCart = useCallback((next: Cart | null) => {
-    if (next) {
-      written.current = true;
-      // A newer server cart supersedes any in-flight reconcile.
-      forceSync.current = false;
-      setCart(next);
-    }
+    written.current = true;
+    // A newer server cart supersedes any in-flight reconcile.
+    // Null clears the cart after a mock order is placed.
+    forceSync.current = false;
+    setCart(next);
   }, []);
 
   const reconcile = useCallback(() => {

@@ -1,6 +1,6 @@
 import { fixtures } from "./fixtures.server";
 import type { Order } from "./types";
-import type { CartLineItem } from "~/lib/cart/types";
+import type { Cart, CartLineItem } from "~/lib/cart/types";
 
 /**
  * Module-level stand-in for the Store API's server-held orders. Phase 26 adds
@@ -68,4 +68,37 @@ export function getOrderById(id: string): Order | null {
 
 export function listOrders(): Order[] {
   return [...orders.values()];
+}
+
+let nextLookup = 1002;
+
+/** Snapshot the current cart into a new order; the seam a real checkout replaces. */
+export function createOrderFromCart(cart: Cart): Order {
+  const id = `order-demo-${nextLookup}`;
+  const order: Order = {
+    id,
+    lookup: nextLookup++,
+    createdAt: new Date().toISOString(),
+    customerEmail: "demo@example.com",
+    lineItems: cart.lineItems.map((item) => ({
+      ...item,
+      productVariant: {
+        ...item.productVariant,
+        images: [...item.productVariant.images],
+        combinations: [...item.productVariant.combinations],
+        product: {
+          ...item.productVariant.product,
+          images: [...item.productVariant.product.images],
+        },
+      },
+    })),
+    shippingAddress: seeded.shippingAddress,
+    shipping: seeded.shipping,
+    subtotal: cart.subtotal ?? 0,
+    total: cart.subtotal ?? 0,
+    tax: 0,
+  };
+  orders.set(id, order);
+
+  return order;
 }

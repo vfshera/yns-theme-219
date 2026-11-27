@@ -27,3 +27,8 @@ export async function getCartCookie(request: Request): Promise<string | null> {
 export function serializeCartCookie(id: string): Promise<string> {
   return cartCookie.serialize({ id });
 }
+
+/** Expire the cart cookie after a mock order is placed. */
+export function expireCartCookie(): Promise<string> {
+  return cartCookie.serialize(null, { maxAge: 0 });
+}

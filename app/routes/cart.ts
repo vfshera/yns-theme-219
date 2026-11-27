@@ -5,11 +5,13 @@ import {
   validateSelections,
 } from "~/lib/bundles/selections";
 import {
+  expireCartCookie,
   getCartCookie,
   serializeCartCookie,
 } from "~/lib/cart/cart-cookie.server";
 import {
   applyCoupon,
+  clearCart,
   createCart,
   getCart,
   makeBundleLine,
@@ -21,6 +23,7 @@ import {
   getBundleById,
   getProductByVariantId,
 } from "~/lib/mock-store/catalog.server";
+import { createOrderFromCart } from "~/lib/mock-store/orders.server";
 import type { BundleLine, BundleSelection } from "~/lib/bundles/types";
 import type { CartResponse } from "~/lib/cart/types";
 
@@ -270,6 +273,18 @@ export async function action({ request }: Route.ActionArgs) {
       }
 
       return reply({ cart: removeCoupon(id) });
+    }
+
+    case "place-order": {
+      const current = id ? getCart(id) : null;
+      if (!current || current.lineItems.length === 0) {
+        return invalid("Your cart is empty");
+      }
+
+      const order = createOrderFromCart(current);
+      clearCart(current.id);
+
+      return reply({ cart: null, orderId: order.id }, await expireCartCookie());
     }
 
     default:
