@@ -134,6 +134,7 @@ export type Store = {
       newsletter: boolean;
       newsletterPopup: boolean;
       restockNotifications: boolean;
+      cookieConsent: boolean;
     };
     newsletterPopup?: NewsletterPopupSettings | null;
     defaultLanguage: string | null;

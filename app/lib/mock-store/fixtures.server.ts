@@ -806,6 +806,7 @@ const STORE = {
       newsletter: true,
       newsletterPopup: true,
       restockNotifications: true,
+      cookieConsent: true,
     },
     newsletterPopup: {
       delaySeconds: 30,
