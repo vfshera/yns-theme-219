@@ -11,6 +11,7 @@ import type {
   MeResponse,
   Post,
   Product,
+  ProductReviewsResponse,
   SocialsResponse,
 } from "./types";
 import type { CatalogSort } from "~/lib/catalog-sort";
@@ -75,6 +76,7 @@ export function getStoreInfo() {
     newsletterPopupSettings: store.settings.newsletterPopup ?? null,
     restockNotifications: tools.restockNotifications ?? false,
     cookieConsent: tools.cookieConsent ?? false,
+    reviews: tools.reviews ?? false,
     socialLinks,
   };
 }
@@ -433,4 +435,17 @@ export function getRelatedProducts(
   const rest = others.filter((product) => !categoryIds.has(product.id));
 
   return [...inCategory, ...rest].slice(0, limit);
+}
+
+/** Static mock reviews for a product, with the summary computed over the full set. */
+export function getProductReviews(
+  productId: string,
+  limit = 20,
+): ProductReviewsResponse {
+  const params = new URLSearchParams({
+    productId,
+    limit: String(limit),
+  });
+
+  return queryStore("products/reviews", params) as ProductReviewsResponse;
 }

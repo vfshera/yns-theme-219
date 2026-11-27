@@ -5,6 +5,7 @@ import type {
   MeResponse,
   Post,
   Product,
+  ProductReview,
   ProductVariant,
   SocialsResponse,
   Store,
@@ -788,6 +789,27 @@ const POSTS = [
   },
 ] satisfies Post[];
 
+/** Two reviews for stationery; other products have none. Shapes mirror commerce-kit. */
+const REVIEWS = [
+  {
+    id: "review-1",
+    productId: "pastel-stationery-set",
+    author: "Mara",
+    content:
+      "The colours are even lovelier in person and the paper feels wonderful.",
+    rating: 5,
+    createdAt: "2026-10-12T10:00:00.000Z",
+  },
+  {
+    id: "review-2",
+    productId: "pastel-stationery-set",
+    author: "Idle",
+    content: "A lovely set. The A4 size is perfect for my desk.",
+    rating: 4,
+    createdAt: "2026-11-02T10:00:00.000Z",
+  },
+] satisfies (ProductReview & { productId: string })[];
+
 const STORE = {
   name: "Lazora",
   currency: "USD",
@@ -807,6 +829,7 @@ const STORE = {
       newsletterPopup: true,
       restockNotifications: true,
       cookieConsent: true,
+      reviews: true,
     },
     newsletterPopup: {
       delaySeconds: 30,
@@ -840,6 +863,7 @@ export const fixtures = {
   legalPages: LEGAL_PAGES,
   posts: POSTS,
   products: ALL_PRODUCTS,
+  reviews: REVIEWS,
   socials: SOCIALS,
   me: (origin: string): MeResponse => ({
     store: STORE,

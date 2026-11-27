@@ -135,11 +135,24 @@ export type Store = {
       newsletterPopup: boolean;
       restockNotifications: boolean;
       cookieConsent: boolean;
+      reviews: boolean;
     };
     newsletterPopup?: NewsletterPopupSettings | null;
     defaultLanguage: string | null;
     enabledLanguages: Record<string, string>;
   };
+};
+
+export type ProductReview = {
+  id: string;
+  author: string;
+  content: string;
+  rating: number;
+  createdAt: string;
+};
+
+export type ProductReviewsResponse = ApiList<ProductReview> & {
+  summary: { averageRating: number; reviewCount: number };
 };
 
 export type MeResponse = {
@@ -159,4 +172,5 @@ export type StoreResponse =
   | ApiList<Category>
   | ApiList<Collection>
   | ApiList<LegalPage>
-  | ApiList<Post>;
+  | ApiList<Post>
+  | ProductReviewsResponse;

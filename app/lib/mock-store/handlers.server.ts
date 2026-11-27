@@ -1,5 +1,11 @@
 import { fixtures } from "./fixtures.server";
-import type { ApiList, Post, Product, StoreResponse } from "./types";
+import type {
+  ApiList,
+  Post,
+  Product,
+  ProductReviewsResponse,
+  StoreResponse,
+} from "./types";
 
 const DEFAULT_LIMIT = 12;
 const MAX_LIMIT = 100;
@@ -73,6 +79,21 @@ const handlers: Record<string, Handler> = {
   me: (_params, origin) => fixtures.me(origin),
   products: (params) => list(browseProducts(params), params),
   "products/filters": (params) => list([], params),
+  "products/reviews": (params) => {
+    const productId = params.get("productId") ?? params.get("id");
+    const matching = fixtures.reviews.filter(
+      (review) => review.productId === productId,
+    );
+    const averageRating = matching.length
+      ? matching.reduce((sum, review) => sum + review.rating, 0) /
+        matching.length
+      : 0;
+
+    return {
+      ...list(matching, params),
+      summary: { averageRating, reviewCount: matching.length },
+    } satisfies ProductReviewsResponse;
+  },
   categories: (params) => list(fixtures.categories, params),
   collections: (params) => list(fixtures.collections, params),
   posts: (params) => list(browsePosts(params), params),

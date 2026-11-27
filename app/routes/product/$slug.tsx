@@ -19,12 +19,14 @@ import { sortVariantsByOptions } from "~/lib/variants/order";
 import { resolveSelectedVariant } from "~/lib/variants/selected";
 import {
   getProductBySlug,
+  getProductReviews,
   getRelatedProducts,
   getStoreInfo,
 } from "~/lib/mock-store/catalog.server";
 import { getStoreConfig } from "~/lib/mock-store/config.server";
 import { BundleBuilder } from "./+/BundleBuilder";
 import { ProductGallery } from "./+/ProductGallery";
+import { ProductReviews } from "./+/ProductReviews";
 import { PurchasePanel } from "./+/PurchasePanel";
 import { RelatedProducts } from "./+/RelatedProducts";
 import { RestockNotify } from "./+/RestockNotify";
@@ -36,6 +38,11 @@ export function loader({ params }: Route.LoaderArgs) {
   if (!product) {
     throw new Response("Not Found", { status: 404 });
   }
+
+  const info = getStoreInfo();
+  const reviewData = info.reviews
+    ? getProductReviews(product.id)
+    : { data: [], summary: { averageRating: 0, reviewCount: 0 } };
 
   return {
     product,
@@ -54,7 +61,10 @@ export function loader({ params }: Route.LoaderArgs) {
         benefits,
       })),
     config: getStoreConfig(),
-    restockEnabled: getStoreInfo().restockNotifications,
+    restockEnabled: info.restockNotifications,
+    reviewsEnabled: info.reviews,
+    reviews: reviewData.data,
+    reviewSummary: reviewData.summary,
     related: getRelatedProducts(product.id, product.category?.slug),
   };
 }
@@ -125,6 +135,15 @@ export const meta: Route.MetaFunction = ({ loaderData, matches, location }) => {
               name: product.name,
               description,
               ...(ogImage ? { image: [ogImage] } : {}),
+              ...((loaderData?.reviewSummary?.reviewCount ?? 0) > 0
+                ? {
+                    aggregateRating: {
+                      "@type": "AggregateRating",
+                      ratingValue: loaderData?.reviewSummary.averageRating,
+                      reviewCount: loaderData?.reviewSummary.reviewCount,
+                    },
+                  }
+                : {}),
               ...(variant
                 ? {
                     offers: {
@@ -213,6 +232,9 @@ export default function Product({ loaderData }: Route.ComponentProps) {
     plans,
     config,
     restockEnabled,
+    reviewsEnabled,
+    reviews,
+    reviewSummary,
     related,
   } = loaderData;
   const { selectedVariant, selectedOptions } = useSelectedVariant(variants);
@@ -317,6 +339,14 @@ export default function Product({ loaderData }: Route.ComponentProps) {
           )}
         </div>
       </div>
+
+      {reviewsEnabled && (
+        <ProductReviews
+          reviews={reviews}
+          summary={reviewSummary}
+          slug={product.slug}
+        />
+      )}
 
       <RelatedProducts products={related} config={config} />
     </div>
